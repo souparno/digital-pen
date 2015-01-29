@@ -1,0 +1,6 @@
+[submodule "assets/js/mini"]
+	path = assets/js/mini
+	url = git@github.com:souparno/mini.js.git
+[submodule "assets/js/jquery-simulate-ext"]
+	path = assets/js/jquery-simulate-ext
+	url = git@github.com:j-ulrich/jquery-simulate-ext.git
