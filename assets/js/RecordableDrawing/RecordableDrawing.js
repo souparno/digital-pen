@@ -40,7 +40,6 @@ RecordableDrawing = function (canvasId)
 	{
 		if (self.mouseDown)
 		{
-      console.log('mouse move');
 			var canvasX = $(self.canvas).offset().left;
 			var canvasY = $(self.canvas).offset().top;
 			

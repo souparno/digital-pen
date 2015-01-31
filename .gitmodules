@@ -4,3 +4,6 @@
 [submodule "assets/js/jquery-simulate-ext"]
 	path = assets/js/jquery-simulate-ext
 	url = git@github.com:j-ulrich/jquery-simulate-ext.git
+[submodule "assets/js/underscore"]
+	path = assets/js/underscore
+	url = git@github.com:jashkenas/underscore.git
