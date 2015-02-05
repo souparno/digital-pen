@@ -11,14 +11,34 @@ RecordableDrawing = function (canvasId)
 	this.actions = new Array();
 	this.ctx = null;
 	this.mouseDown = false;
-	this.currentRecording = null; //instance of Recording
+	this.recording = null; //instance of Recording
 	this.recordings = new Array(); //array of Recording objects
 	this.lastMouseX = this.lastMouseY = -1;
 	this.bgColor = "rgb(255,255,255)";
 	var currentLineWidth = 5;
 	var drawingColor = "rgb(0,0,0)";
 	var pauseInfo = null;
-	
+
+  __init = function()
+	{
+		self.canvas = $("#" + canvasId);
+		if (self.canvas.length === 0)
+		{
+			return;
+		} 
+		self.canvas = self.canvas.get(0);
+		self.width = $(self.canvas).width();
+		self.height = $(self.canvas).height();
+		self.ctx = self.canvas.getContext("2d");
+
+		$(self.canvas).bind("mousedown", onMouseDown);
+		$(self.canvas).bind("mouseup", onMouseUp);
+		$(self.canvas).bind("mousemove", onMouseMove);
+		
+		self.clearCanvas();		
+	};
+  
+  
 	onMouseDown = function(event)
 	{
 		var canvasX = $(self.canvas).offset().left;
@@ -29,12 +49,14 @@ RecordableDrawing = function (canvasId)
 		var y = Math.floor(event.pageY - canvasY);
 		
 		var	currAction = new Point(x,y,0);
+    console.log(currAction);
 		self.drawAction(currAction,true);
-		if (self.currentRecording != null)
-			self.currentRecording.addAction(currAction);
+		if (self.recording !== null){
+      self.recording.addAction(currAction);
+    }			
 		event.preventDefault();
 		return false;
-	}
+	};
 	
 	onMouseMove = function(event)
 	{
@@ -45,47 +67,50 @@ RecordableDrawing = function (canvasId)
 			
 			var x = Math.floor(event.pageX - canvasX);
 			var y = Math.floor(event.pageY - canvasY);
-			
+      
 			var action = new Point(x,y,1);
-			if (self.currentRecording != null)
-				self.currentRecording.addAction(action);
-			self.drawAction(action, true);
-				
+      console.log(action);
+      //console.log(action);
+			if (self.recording !== null){
+        self.recording.addAction(action);
+      }				
+			self.drawAction(action, true);				
 			event.preventDefault();
 			self.lastMouseX = x;
 			self.lastMouseY = y;
-			return false;
+      return false;      
 		}
-	}
+	};
 	
 	onMouseUp = function(event)
 	{
 		self.mouseDown = false;
 		self.lastMouseX = -1;
 		self.lastMouseY = -1;
-	}
+    return false;
+	};
 	
 	this.startRecording = function()
 	{
-		self.currentRecording = new Recording(this);
+		self.recording = new Recording(this);
 		self.recordings = new Array();
-		self.recordings.push(self.currentRecording);
-		self.currentRecording.start();
-	}
+		self.recordings.push(self.recording);
+		self.recording.start();
+	};
 	
 	this.stopRecording = function()
 	{
-		if (self.currentRecording != null)
-			self.currentRecording.stop();
-		self.currentRecording = null;
-	}
+		if (self.recording !== null)
+			self.recording.stop();
+		self.recording = null;
+	};
 	
 	this.playRecording = function(onPlayStart, onPlayEnd, onPause, interruptActionStatus)
 	{
-		if (typeof interruptActionStatus == 'undefined')
+		if (typeof interruptActionStatus === 'undefined')
 			interruptActionStatus = null;
 		
-		if (self.recordings.length == 0)
+		if (self.recordings.length === 0)
 		{
 			alert("No recording loaded to play");
 			onPlayEnd();
@@ -100,15 +125,15 @@ RecordableDrawing = function (canvasId)
 		
 		for (var rec = 0; rec < self.recordings.length; rec++)
 		{
-			if (interruptActionStatus != null)
+			if (interruptActionStatus !== null)
 			{
 				var status = interruptActionStatus();
-				if (status == "stop") {
+				if (status === "stop") {
 					pauseInfo = null;
 					break;
 				}
 				else 
-					if (status == "pause") {
+					if (status === "pause") {
 						__onPause(rec-1, onPlayEnd, onPause, interruptActionStatus);
 						break;
 					}
@@ -117,7 +142,7 @@ RecordableDrawing = function (canvasId)
 				__onPause(rec-1, onPlayEnd, onPause, interruptActionStatus);
 			}, interruptActionStatus);
 		}
-	}
+	};
 
 	function __onPause(index, onPlayEnd, onPause, interruptActionStatus)
 	{
@@ -133,7 +158,7 @@ RecordableDrawing = function (canvasId)
 		
 	this.resumePlayback = function (onResume)
 	{
-		if (pauseInfo == null) {
+		if (pauseInfo === null) {
 			if (onResume)
 				onResume(false);
 			return;
@@ -172,19 +197,19 @@ RecordableDrawing = function (canvasId)
 				__onPause(rec-1, onPlayEnd, onPause, interruptActionStatus);
 			},interruptActionStatus);
 		}
-	}
+	};
 
 	this.clearCanvas = function()
 	{
 		self.ctx.fillStyle = self.bgColor;
 		self.ctx.fillRect(0,0,self.canvas.width,self.canvas.height);		
-	}
+	};
 
 	this.removeAllRecordings = function()
 	{
 		self.recordings = new Array()
-		self.currentRecording = null;
-	}
+		self.recording = null;
+	};
 	
 	this.drawAction = function (actionArg, addToArray)
 	{
@@ -206,33 +231,9 @@ RecordableDrawing = function (canvasId)
 		}
 		if (addToArray)
 			self.actions.push(actionArg);
-	}	
-		
-	__init = function()
-	{
-		self.canvas = $("#" + canvasId);
-		if (self.canvas.length == 0)
-		{
-			return;
-		} 
-		self.canvas = self.canvas.get(0);
-		self.width = $(self.canvas).width();
-		self.height = $(self.canvas).height();
-		self.ctx = self.canvas.getContext("2d");
-		
-		//$(self.canvas).bind("vmousedown", onMouseDown);
-		//$(self.canvas).bind("vmouseup", onMouseUp);
-		//$(self.canvas).bind("vmousemove", onMouseMove);
-
-		$(self.canvas).bind("mousedown", onMouseDown);
-		$(self.canvas).bind("mouseup", onMouseUp);
-		$(self.canvas).bind("mousemove", onMouseMove);
-		
-		self.clearCanvas();		
-	}
-	
+	};
 	__init();
-}
+};
 
 Recording = function (drawingArg)
 {
@@ -261,17 +262,17 @@ Recording = function (drawingArg)
 		self.recStartTime = (new Date()).getTime();
 		self.intervalId = window.setInterval(self.onInterval, self.timeInterval);
 		self.started = true;
-	}
+	};
 	
 	this.stop = function()
 	{
-		if (self.intervalId != null)
+		if (self.intervalId !== null)
 		{
 			window.clearInterval(self.intervalId);
 			self.intervalId = null;
 		}
 		self.started = false;
-	}
+	};
 	
 	this.onInterval = function()
 	{
@@ -279,7 +280,7 @@ Recording = function (drawingArg)
 		{
 			var timeSlot = (new Date()).getTime() - self.recStartTime;
 		
-			if (self.currActionSet == null)
+			if (self.currActionSet === null)
 			{
 				self.currActionSet = new ActionsSet(timeSlot, self.buffer);
 				self.actionsSet = self.currActionSet;
@@ -294,14 +295,15 @@ Recording = function (drawingArg)
 			self.buffer = new Array();
 		}
 		self.currTime += self.timeInterval;
-	}
+	};
 	
-	this.addAction = function(actionArg)
+	this.addAction = function(pointObj)
 	{
-		if (!self.started)
-			return;
-		self.buffer.push(actionArg);
-	}
+		if (!self.started){
+      return;
+    }			
+		self.buffer.push(pointObj);
+	};
 	
 	this.playRecording = function(callbackFunctionArg, onPlayEnd, onPause, interruptActionStatus)
 	{
@@ -313,7 +315,7 @@ Recording = function (drawingArg)
 		}	
 
 		self.scheduleDraw(self.actionsSet,self.actionsSet.interval,callbackFunctionArg, onPlayEnd, onPause, true, interruptActionStatus);
-	}
+	};
 
 	this.scheduleDraw = function (actionSetArg, interval, callbackFunctionArg, onPlayEnd, onPause, isFirst, interruptActionStatus)
 	{
@@ -348,17 +350,23 @@ Recording = function (drawingArg)
 			
 			var intervalDiff = -1;
 			var isLast = true;
-			if (actionSetArg.next != null)
+			if (actionSetArg.next !== null)
 			{
 				isLast = false;
 				intervalDiff = actionSetArg.next.interval - actionSetArg.interval;
 			}
-			if (intervalDiff >= 0)
-				self.scheduleDraw(actionSetArg.next, intervalDiff, callbackFunctionArg, onPlayEnd, onPause, false,interruptActionStatus);
-
+			if (intervalDiff >= 0){
+        self.scheduleDraw(actionSetArg.next,
+          intervalDiff,
+          callbackFunctionArg,
+          onPlayEnd,
+          onPause,
+          false,
+          interruptActionStatus);
+      }
 			self.drawActions(actionSetArg.actions, onPlayEnd, isFirst, isLast);
-		},interval);
-	}
+		}, interval);
+	};
 	
 	this.resume = function()
 	{
@@ -373,7 +381,7 @@ Recording = function (drawingArg)
 			self.pauseInfo.interruptActionsStatus);
 			
 		self.pauseInfo = null;
-	}	
+	};
 	
 	this.drawActions = function (actionArray, onPlayEnd, isFirst, isLast)
 	{
@@ -384,8 +392,8 @@ Recording = function (drawingArg)
 		{
 			onPlayEnd();
 		}
-	}
-}
+	};
+};
 
 Action = function()
 {
@@ -413,7 +421,7 @@ Point = function (argX,argY,typeArg)
 	this.type = typeArg; //0 - moveto, 1 - lineto
 	
 	Action.call(this,1,argX,argY);
-}
+};
 
 Point.prototype = new Action();
 

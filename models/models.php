@@ -14,7 +14,6 @@ class Board extends Model {
             . "title = '". $title ."',"
             . "chalkmarks = '". $chalkmarks ."',"
             . "audio_file = '". $audio_file ."';";
-    echo $sql;
     return $this->db->ExecuteSQL($sql);
   }
 

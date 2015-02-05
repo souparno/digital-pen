@@ -54,6 +54,93 @@
     <script src="./assets/js/underscore/underscore-min.js"></script>   
     <script src="./assets/js/audio/recorder.js"></script>
     <script src="./assets/js/audio/jquery.voice.min.js"></script>
-    <script src="./assets/js/main.js" type="text/javascript"></script>    
+    <script src="./assets/js/main.js" type="text/javascript"></script> 
+    <script>
+        $(document).ready(function () {
+          "use strict";
+
+          var drawing = new RecordableDrawing("canvas1");
+
+          $("#recordBtn").click(function () {
+            var btn = $("#recordBtn"), btnTxt = btn.prop("value");
+
+            switch (btnTxt) {
+              case 'Record':
+                btn.prop("value", "Stop Record");
+                $.voice.record(false, function () {
+
+                });
+                drawing.startRecording();
+                break;
+              case 'Stop Record':
+                btn.prop("value", "Record");
+                $.voice.stop();
+                drawing.stopRecording();
+                break;
+            }
+          });
+
+          $("#playBtn").click(function () {
+            drawing.playRecording(function () {
+            }, function () {
+            }, function () {
+            }, function () {
+            });
+          });
+
+          $("#saveBtn").click(function () {
+            var serResult = serializeDrawing(drawing);
+            
+            
+            console.log(serResult);
+            
+            $.voice.stop();
+            $.voice.export(function (blob) {
+              var formData = new FormData();
+              formData.append('blob', blob);
+              formData.append('chalkmarks', serResult);
+
+              $.ajax({
+                url: '/create',
+                data: formData,
+                processData: false,
+                contentType: false,
+                type: 'POST',
+                success: function (data) {
+                  console.log(data);
+                }
+              });
+            }, "blob");
+          });
+
+          $("#clearBtn").click(function () {
+            drawing.clearCanvas();
+          });
+
+          function play(serTxt, url) {
+            var result = deserializeDrawing(serTxt);
+            drawing.recordings = result;
+            for (var i = 0; i < result.length; i++) {
+              result[i].drawing = drawing;
+            }
+            drawing.playRecording(function () { },
+              function () { },
+              function () { },
+              function () { });
+            $("#audio").attr("src", url);
+            $("#audio")[0].play();
+          }
+
+          
+        });
+      </script>
+    <?php
+    if (count($data)) {
+      var_dump( $data);
+      ?>
+      
+      <?php
+    }
+    ?>
   </body>
 </html>
