@@ -12,36 +12,40 @@ var Action = Point.Extend({
   }
 });
 
-var Record = Class.Create({
-  init: function () {
-    this._Record = false;
-    this.actionList = [];    
-    this.lastTimeSlot = null;
-  },
-  start: function () {
-    this.lastTimeSlot = (new Date()).getTime();
-    this._Record = true;
-  },
-  stop: function () {
-    this._Record = false;
-  },
-  add: function (coordinate) {
-    var presentTime = (new Date()).getTime(),
-      interval, action;
+var Record = (function () {
 
-    if (this._Record) {
-      interval = presentTime - this.lastTimeSlot;
-      this.lastTimeSlot = presentTime;
-      action = new Action(coordinate, interval);
-      this.actionList.push(action);
-    }
-  },
-  play: function (fn) {
-    var actionList = this.actionList,
-      actionList_length = actionList.length,
-      loop = function (i) {
-        var pos = actionList_length - i,
-          action = actionList[pos],
+  var lastTimeSlot = null,
+    _record = false;
+  
+  return  Class.Create({
+    init: function () {
+      this.actionList = [];
+    },
+
+    start: function () {
+      lastTimeSlot = (new Date()).getTime();
+      _record = true;
+    },
+
+    stop: function () {
+      _record = false;
+    },
+
+    push: function (coordinate) {
+      var presentTime = (new Date()).getTime(),
+        interval, action;
+
+      if (_record) {
+        interval = presentTime - lastTimeSlot;
+        lastTimeSlot = presentTime;
+        action = new Action(coordinate, interval);
+        this.actionList.push(action);
+      }
+    },
+
+    play: function (fn) {
+      var iterate = function (i) {
+        var action = temp_actionList.shift(),
           x = action.x,
           y = action.y,
           interval = action.interval;
@@ -49,23 +53,16 @@ var Record = Class.Create({
         setTimeout(function () {
           fn(x, y);
           if (--i) {
-            loop.call(this, i , interval);
+            iterate(i);
           }
-        }.bind(this), interval);
-      };
+        }, interval);},
+        temp_actionList;
 
-    if(!this._Record && this.actionList.length){
-      loop(actionList_length);
+      if (!_record && this.actionList.length) {
+        temp_actionList = this.actionList.slice();
+        iterate(temp_actionList.length);
+      }
     }
-  }
-});
-
-var Paint = Class.Create({
-  init: function () {
-
-  },
-  draw: function () {
-    
-  }
-});
+  });
+}());
 

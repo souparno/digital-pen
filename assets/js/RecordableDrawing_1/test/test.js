@@ -4,14 +4,14 @@ QUnit.module('Record', {
   }
 });
 
-QUnit.asyncTest('add', function (assert) {
+QUnit.asyncTest('push', function (assert) {
   var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
     intervals = [0, 500, 1000],
     temp_pointList = pointList.slice(),
     temp_intervals = intervals.slice(), 
     loop = function (i, timeslot) {
       setTimeout(function () {
-        this.record.add(temp_pointList.shift());
+        this.record.push(temp_pointList.shift());
         if (--i) {
           loop.call(this, i , temp_intervals.shift());
         } else {
@@ -32,6 +32,7 @@ QUnit.asyncTest('add', function (assert) {
   this.record.start();
   loop.call(this, temp_pointList.length, temp_intervals.shift());
 });
+
 QUnit.asyncTest('play', function (assert) {
   var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
     intervals = [500, 1000, 2000],
@@ -39,7 +40,7 @@ QUnit.asyncTest('play', function (assert) {
     temp_intervals = intervals.slice(), 
     loop = function (i, timeslot) {
       setTimeout(function () {
-        this.record.add(temp_pointList.shift());
+        this.record.push(temp_pointList.shift());
         if (--i) {
           loop.call(this, i , temp_intervals.shift());
         } else {
