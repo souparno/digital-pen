@@ -1,9 +1,9 @@
 [submodule "assets/js/mini"]
 	path = assets/js/mini
 	url = git@github.com:souparno/mini.js.git
-[submodule "assets/js/jquery-simulate-ext"]
-	path = assets/js/jquery-simulate-ext
-	url = git@github.com:j-ulrich/jquery-simulate-ext.git
 [submodule "assets/js/underscore"]
 	path = assets/js/underscore
 	url = git@github.com:jashkenas/underscore.git
+[submodule "assets/js/raphael"]
+	path = assets/js/raphael
+	url = git@github.com:ianli/raphael-sketchpad.git
