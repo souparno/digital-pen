@@ -6,34 +6,67 @@ var Point = Class.Create({
 });
 
 var Action = Point.Extend({
-  init: function (coordinate, timeSlot) {
+  init: function (coordinate, interval) {
     this._super(coordinate.x, coordinate.y);
-    this.timeSlot = timeSlot;
-    this.next = null;
+    this.interval = interval;
   }
 });
 
-var Recording = Class.Create({
+var Record = Class.Create({
   init: function () {
-    this.head = null;
-    this.tail = null;    
+    this._Record = false;
+    this.actionList = [];    
+    this.lastTimeSlot = null;
+    this.paint = new Paint;
   },
+  start: function () {
+    this.lastTimeSlot = (new Date()).getTime();
+    this._Record = true;
+  },
+  stop: function () {
+    this._Record = false;
+  },
+  add: function (coordinate) {
+    var presentTime = (new Date()).getTime(),
+      interval, action;
 
-  input: function (coordinate) {
-    var timeSlot = (new Date()).getTime();
-    
-    if(!this.head){
-      this.head = new Action(coordinate, timeSlot);
-      this.tail = this.head;
-      return;
+    if (this._Record) {
+      interval = presentTime - this.lastTimeSlot;
+      this.lastTimeSlot = presentTime;
+      action = new Action(coordinate, interval);
+      this.actionList.push(action);
     }
-    
-    this.tail.next = new Action(coordinate, timeSlot);
-    this.tail = this.tail.next;
   },
+  play: function () {
+    var actionList = this.actionList,
+      actionList_length = actionList.length,
+      loop = function (i) {
+        var pos = actionList_length - i,
+          action = actionList[pos],
+          x = action.x,
+          y = action.y,
+          interval = action.interval;
 
-  serialise: function () {
-    return JSON.stringify(this.head);
+        setTimeout(function () {
+          this.paint.draw(x, y);
+          if (--i) {
+            loop.call(this, i , interval);
+          }
+        }.bind(this), interval);
+      };
+
+    if(!this._Record && this.actionList.length){
+      loop(actionList_length);
+    }
+  }
+});
+
+var Paint = Class.Create({
+  init: function () {
+
+  },
+  draw: function () {
+    
   }
 });
 
