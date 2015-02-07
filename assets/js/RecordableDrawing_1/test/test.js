@@ -33,7 +33,7 @@ QUnit.asyncTest('push', function (assert) {
   loop.call(this, temp_pointList.length, temp_intervals.shift());
 });
 
-QUnit.asyncTest('play', function (assert) {
+QUnit.asyncTest('pop', function (assert) {
   var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
     intervals = [500, 1000, 2000],
     temp_pointList = pointList.slice(),
@@ -53,7 +53,7 @@ QUnit.asyncTest('play', function (assert) {
 
       this.record.stop();
       lastTimeSlot = (new Date()).getTime();
-      this.record.play(function (x, y) {
+      this.record.pop(function (x, y) {
         var point = pointList.shift(),
           presentTime =  (new Date()).getTime(),
           interval = presentTime - lastTimeSlot;

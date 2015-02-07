@@ -43,7 +43,7 @@ var Record = (function () {
       }
     },
 
-    play: function (fn) {
+    pop: function (fn) {
       var iterate = function (i) {
         var action = temp_actionList.shift(),
           x = action.x,
