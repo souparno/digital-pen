@@ -17,7 +17,6 @@ var Record = Class.Create({
     this._Record = false;
     this.actionList = [];    
     this.lastTimeSlot = null;
-    this.paint = new Paint;
   },
   start: function () {
     this.lastTimeSlot = (new Date()).getTime();
@@ -37,7 +36,7 @@ var Record = Class.Create({
       this.actionList.push(action);
     }
   },
-  play: function () {
+  play: function (fn) {
     var actionList = this.actionList,
       actionList_length = actionList.length,
       loop = function (i) {
@@ -48,7 +47,7 @@ var Record = Class.Create({
           interval = action.interval;
 
         setTimeout(function () {
-          this.paint.draw(x, y);
+          fn(x, y);
           if (--i) {
             loop.call(this, i , interval);
           }

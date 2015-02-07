@@ -3,57 +3,71 @@ QUnit.module('Record', {
     this.record = new Record();
   }
 });
-//
-//QUnit.test('add', function (assert) {
-//  this.record.add({x: 1, y: 2});
-//  this.record.add({x: 3, y: 4});
-//
-//  assert.equal(this.record.actionList.length, 2);
-//});
 
-QUnit.asyncTest('add with time stamp', function (assert) {
+QUnit.asyncTest('add', function (assert) {
   var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
-    pointList_length = pointList.length,  
+    intervals = [0, 500, 1000],
+    temp_pointList = pointList.slice(),
+    temp_intervals = intervals.slice(), 
     loop = function (i, timeslot) {
       setTimeout(function () {
-        this.record.add(pointList[pointList_length - i]);
+        this.record.add(temp_pointList.shift());
         if (--i) {
-          loop.call(this, i , timeslot + 500);
+          loop.call(this, i , temp_intervals.shift());
         } else {
           timeTest.call(this);
         }
       }.bind(this), timeslot);
     },
-    timeTest = function () { 
-      var interval = [];
-
-      interval.push(this.record.actionList[0].interval);
-      interval.push(this.record.actionList[1].interval);
-      interval.push(this.record.actionList[2].interval);
-
-      assert.equal(Math.round(interval[0]/100)*100, 0);
-      assert.equal(Math.round(interval[1]/100)*100, 500);
-      assert.equal(Math.round(interval[2]/100)*100, 1000);
+    timeTest = function () {
+      assert.equal(Math.round(this.record.actionList.shift().interval/100)*100,
+        intervals.shift());
+      assert.equal(Math.round(this.record.actionList.shift().interval/100)*100,
+        intervals.shift());
+      assert.equal(Math.round(this.record.actionList.shift().interval/100)*100,
+        intervals.shift());
       QUnit.start();
     };
 
   this.record.start();
-  loop.call(this, pointList_length, 0);
-
+  loop.call(this, temp_pointList.length, temp_intervals.shift());
 });
-//QUnit.asyncTest('play', function (assert) {
-//
-//  this.record.add({x:1, y:2});
-//  this.record.add({x:3, y:4});
-//  this.record.add({x:5, y:6});
-//  this.record.add({x:7, y:8});
-//
-//  this.record.play();
-//
-//  var timeSlot = (new Date()).getTime();
-//  setTimeout(function () {
-//    assert.equal(Math.round(((new Date()).getTime() - timeSlot)/10)*10 , 100);
-//    QUnit.start();
-//  }.bind(this), 100);
-//});
+QUnit.asyncTest('play', function (assert) {
+  var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
+    intervals = [500, 1000, 2000],
+    temp_pointList = pointList.slice(),
+    temp_intervals = intervals.slice(), 
+    loop = function (i, timeslot) {
+      setTimeout(function () {
+        this.record.add(temp_pointList.shift());
+        if (--i) {
+          loop.call(this, i , temp_intervals.shift());
+        } else {
+          play.call(this);
+        }
+      }.bind(this), timeslot);
+    },
+    play = function () {
+      var lastTimeSlot = null;
+
+      this.record.stop();
+      lastTimeSlot = (new Date()).getTime();
+      this.record.play(function (x, y) {
+        var point = pointList.shift(),
+          presentTime =  (new Date()).getTime(),
+          interval = presentTime - lastTimeSlot;
+
+        lastTimeSlot = presentTime;  
+        assert.equal(x, point.x),
+        assert.equal(y, point.y),
+        assert.equal(Math.round(interval/100)*100, intervals.shift());
+        if(!intervals.length){
+          QUnit.start();
+        }
+      }.bind(this));
+    };
+
+  this.record.start();
+  loop.call(this, temp_pointList.length, temp_intervals.shift());
+});
 
