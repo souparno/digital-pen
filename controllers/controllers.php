@@ -17,7 +17,10 @@ class BoardsController extends Controller {
     return $randomString . '.wav';
   }
 
-  public function create() {
+  public function index() {
+    require_once './views/board/create.php';
+  }
+  public function ajaxifyCreate() {
     if (sizeof($_POST) && isset($_FILES["blob"])) {
       
       $title = 'something';
@@ -30,12 +33,12 @@ class BoardsController extends Controller {
       } else {
         echo $this->board->create($title, $chalkmarks, $fileName);        
       }
-    }
+    }    
   }
 
   public function retrieve($id = '%') {
     $data = $this->board->retrieve($id);
-    require_once './views/index.php';
+    require_once './views/board/retrieve.php';
   }
 
 }
