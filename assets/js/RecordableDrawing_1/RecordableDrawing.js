@@ -6,179 +6,169 @@ var Point = Class.Create({
 });
 
 var Action = Point.Extend({
-  init: function (x, y, mouseMove, interval) {
+  init: function (x, y, type, interval) {
     this._super(x, y);
-    this.mouseMove = mouseMove,
+    this.type = type,
     this.interval = interval;
   }
 });
 
 var Queue = (function () {
- var actionList = [],
+ var array = [],
     lastTimeSlot = null;
 
   return  Class.Create({
-    push: function (params) {
+    init: function () {
+      lastTimeSlot = (new Date()).getTime();
+    },
+
+    push: function (x, y, type) {
       var presentTime = (new Date()).getTime(),
         interval, action;
 
-        interval = presentTime - lastTimeSlot;
-        lastTimeSlot = presentTime;
-        action = new Action(params.x, params.y, params.mouseMove, interval);
-        actionList.push(action);
+      interval = presentTime - lastTimeSlot;
+      lastTimeSlot = presentTime;
+      action = new Action(x, y, type, interval);
+      array.push(action);
     },
 
     forEachpop: function (fn) {
       var iterate = function (i) {
-        var action = temp_actionList.shift(),
+        var action = temp_array.shift(),
           x = action.x,
           y = action.y,
-          mouseMove = action.mouseMove,
+          type = action.type,
           interval = action.interval;
 
         setTimeout(function () {
-          fn(x, y, mouseMove);
+          fn(x, y, type);
           if (--i) {
             iterate(i);
           }
         }, interval);},
-        temp_actionList;
+        temp_array;
 
-      temp_actionList = actionList.slice();
-      iterate(temp_actionList.length);
+      temp_array = array.slice();
+      iterate(temp_array.length);
     },
 
-    getActionList: function () {
-      return actionList;
+    get: function () {
+      return array;
     },
 
-    setActionList: function (actionArgs) {
-      actionList = actionArgs;
+    set: function (actionArgs) {
+      array = actionArgs;
+    },
+
+    clear: function () {
+      array = [];
     }
   });
 }());
 
-var Pen = (function () {
+var Pen = Class.Create({
+  moveTo: function (x, y){
+    Board.context.beginPath();
+    Board.context.moveTo(x, y);
+  },
+
+  draw: function (x, y){
+    Board.context.lineTo(x,y);
+    Board.context.stroke();		
+  }
+});
+
+var Board = (function (){
   var getCoordinate = function (event) {
-    var canvasX = Board.canvas.offset().left,
-      canvasY = Board.canvas.offset().top,
+    var canvasX = $(canvas).offset().left,
+      canvasY = $(canvas).offset().top,
       x = Math.floor(event.pageX - canvasX),
       y = Math.floor(event.pageY - canvasY);
-      
+
     return {
       x: x,
       y: y
     };},
-    _mouseDown = false;
+    mouseDown = function (e) {
+      var coordinate;
 
-  return Class.Create({
-    init: function (settings) {
-      this.settings = $.extend({
-        strokeStyle: "#000000",
-        lineWidth: 1
-      }, settings);
-    },
-    mouseDown: function (event) {
-      var coordinate = getCoordinate(event);
-      
+      e.preventDefault();
       _mouseDown = true;
-      return {
-        x: coordinate.x,
-        y: coordinate.y,
-        mouseMove: false
-      };      
-    },
-    mouseMove: function (event) {
-      var coordinate = null;
+      coordinate = getCoordinate(e);
+      pen.moveTo(coordinate.x, coordinate.y);
+      if(_record){
+        queue.push(coordinate.x, coordinate.y, 0);
+      }   
+      return false;},
+    mouseMove = function (e) {
+      var coordinate;
 
-      if(_mouseDown){
-        coordinate = getCoordinate(event);
-        
-        return {
-          x: coordinate.x,
-          y: coordinate.y,
-          mouseMove: true
-        };
+      e.preventDefault();
+      coordinate = getCoordinate(e);
+      if(_mouseDown) {
+        pen.draw(coordinate.x, coordinate.y);
+        if(_record){
+          queue.push(coordinate.x, coordinate.y, 1);
+        }
       }
-      return false;
-    },
-    mouseUp: function () {
+      return false;},
+    mouseUp = function (e) {
+      e.preventDefault();
       _mouseDown = false;
-      return false;
-    }
-  });
-}());
-
-var Board = (function (){
-  var _boardSettings = {        
-    fillStyle: "#000000",
-    font: "10px sans-serif" },
-    queue = new Queue(); 
+      return false;},
+    _mouseDown = false,
     _record = false,
-  context, pen;
+    height, width, queue, canvas, pen;
 
   return {
-    canvas: null,
-    initialise: function (elm, settings) {
-      settings = settings || {};
+    initialise: function (elm) {
+      canvas = $("#" + elm).get(0);
+      width = $(canvas).width();
+		  height = $(canvas).height();
+      $(canvas).unbind();
+      $(canvas).bind("mousedown", mouseDown);
+      $(canvas).bind("mousemove", mouseMove);
+      $(canvas).bind("mouseup", mouseUp);
+      this.context = canvas.getContext('2d');
+      pen = new Pen();      
+    },
 
-      this.canvas = document.getElementById(elm);
-      this.canvas.bind("mousedown", this.mouseDown);
-      this.canvas.bind("mousemove", this.mouseMove);
-      this.canvas.bind("mouseup", this.mouseUp);
-    
-      pen = new Pen(settings);
-      context = this.canvas.getContext('2d');
-      context = $.extend(context, _boardSettings, pen.settings);
-    },
-    mouseDown: function (e) {
-      var params;
-
-      e.preventDefault();
-      params = pen.mouseDown(e);
-      if(_record && params){
-        queue.push(params);
-      }      
-      return false;
-    },
-    mouseMove: function (e) {
-      var params;
-
-      e.preventDefault();
-      params = pen.mouseMove(e);
-      if(_record && params){
-        queue.push(params);
-      }
-      return false;
-    },
-    mouseUp: function (e) {
-      e.preventDefault();
-      pen.mouseUp(e);
-      return false;
-    },
     startRecording: function () {
-      _record = true;
+      queue = new Queue();
+      _record = true;      
     },
+
     stopRecording: function () {
       _record = false;
-      return queue.getActionList;
     },
+    
+    getRecording: function () {
+      return queue.getActionList();      
+    },
+    
+    clearRecording: function () {
+      queue.clear();
+    },
+    
     playRecording: function (actionList) {
-      queue.setActionList = actionList;
-      queue.forEachpop(function(x, y, mouseEvent) {
-        switch(mouseEvent) {
-          case 'mouseDown':
-            pen.mouseDown({});
+      if(actionList){
+        queue.set(actionList);
+      }      
+      queue.forEachpop(function(x, y, type) {
+        switch(type){
+          case 0:
+            pen.moveTo(x, y);
             break;
-          case 'mouseMove':
-            pen.mouseMove({});
+          case 1:
+            pen.draw(x, y);
             break;
-          case 'mouseUp':
-            pen.mouseUp({});
-            break;
-        };
+        }
       }.bind(this));
+    },
+    
+    clearCanvas: function () {
+      this.context.fillStyle = "rgb(255,255,255)";
+      this.context.fillRect(0, 0, width, height);
     }
   };
 }());
-

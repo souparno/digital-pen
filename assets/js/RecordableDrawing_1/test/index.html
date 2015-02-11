@@ -15,10 +15,41 @@ and open the template in the editor.
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="500" height="400"></canvas>    
+    <br/>
+    <button id="start-record">Start Record</button>
+    <button id="stop-record">Stop record</button>
+    <button id="clear-board">clear board</button>
+    <button id="play-record">Play Record</button>
     <script src="../../jquery/jquery-1.11.2.min.js"></script>
     <script src="vendor/qunit-1.16.0.js"></script>
     <script src="../../mini/mini.js"></script>
     <script src="../RecordableDrawing.js"></script>
     <script src="test.js"></script>
+    <script>
+      $(document).ready(function () {
+        Board.initialise('canvas1');
+
+        $('#start-record').click(function () {
+          console.log('record started');
+          Board.startRecording();
+        });
+        
+        $('#stop-record').click(function () {
+          console.log('record stopped');
+          Board.stopRecording();
+        });
+        
+        $('#play-record').click(function () {
+          console.log('record playing');
+          Board.clearCanvas();
+          Board.playRecording();
+        });
+        
+        $('#clear-board').click(function () {
+          console.log('clear canvas is clicked');
+          Board.clearCanvas();
+        });
+      });
+    </script>
   </body>
 </html>
