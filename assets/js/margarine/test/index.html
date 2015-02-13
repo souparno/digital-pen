@@ -6,7 +6,7 @@ and open the template in the editor.
 -->
 <html>
   <head>
-    <title>Iron Man Test Cases</title>
+    <title>Margarine Test Cases</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="vendor/qunit-1.16.0.css">
@@ -15,8 +15,19 @@ and open the template in the editor.
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <script src="../../jquery/jquery-1.11.2.min.js"></script>
+    <script src="../../underscore/underscore-min.js"></script>
     <script src="../margarine.js"></script>
     <script src="vendor/qunit-1.16.0.js"></script>    
     <script src="test.js"></script>
+    <table id="record_table">
+      <script type="text/html" id='table_data'>
+        <% _.each(items, function(value, key){ %>
+        <tr>
+          <td><%= key %></td>
+          <td><%= value %></td>
+        </tr>
+        <% }) %>
+      </script>
+    </table>
   </body>
 </html>

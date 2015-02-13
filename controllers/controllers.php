@@ -5,6 +5,7 @@ class BoardsController extends Controller {
   public function __construct() {
     parent::__construct();
     $this->load->_CLASS("Board");
+    $this->response = new Response();
   }
 
   private function generate_file_id($length = 10) {
@@ -26,13 +27,36 @@ class BoardsController extends Controller {
       $title = 'something';
       $chalkmarks = $_POST['chalkmarks'];
       $fileName = $this->generate_file_id();
-      $uploadDirectory = './uploads/' . $fileName;
+      $uploadDirectory = './uploads/' . $fileName;      
            
       if (!move_uploaded_file($_FILES["blob"]["tmp_name"], $uploadDirectory)) {
-        echo(" problem moving uploaded file" . $uploadDirectory);
+        $this->response->dialog(array(
+          'title' => 'save failed',
+          'content' => "problem, moving file to '.$uploadDirectory.'"
+        ));
       } else {
-        echo $this->board->create($title, $chalkmarks, $fileName);        
-      }
+        if($this->board->create($title, $chalkmarks, $fileName)){
+          $script = <<< JS
+              var Template = _.template($('table-data').html()),
+              items = ['name1', 'name2', 'name3', 'name4'],
+              data = {items: items};
+
+            $('record-table').html(Template(data));
+JS;
+          $this->response->script($script);
+          $this->response->dialog(array(
+            'title' => 'saved',
+            'content' => "The data was saved successfully"
+          ));
+          
+        } else {
+            $this->response->dialog(array(
+            'title' => 'save failed',
+            'content' => "failed to save data to database"
+          ));
+        }        
+      }   
+      $this->response->send();
     }    
   }
 

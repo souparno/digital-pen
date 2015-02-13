@@ -3,11 +3,10 @@ var Ajax = (function () {
 
   return {
 
-    lastContext: undefined,
-
     request: function (url, settings) {
-      settings = settings || {};
+      var self = this;
 
+      settings = settings || {};
       settings = $.extend({
         async: true,
         cache: false,
@@ -15,23 +14,20 @@ var Ajax = (function () {
         type: 'GET',
         context: {},
         success: function (data) {
-          Ajax.response.call(settings.context, data);
+          self.response.call(settings, data);
         }
       }, settings);
       $.ajax(url, settings);
     },
 
     response: function (data) {
-      Ajax.lastContext = this;
-      data = data || {};      
-      
-      if (!data.scripts) {
-        return;
-      }
+      var context = this.context,
+        scripts = data.scripts,
+        key;
 
-      for (var i = 0, length = data.scripts.length; i < length; i++) {
+      for (key in scripts) {
         try {
-          eval(data.scripts[i]);
+          eval(scripts[key]);
         } catch (ex) {
           console.log(ex);
         }

@@ -8,10 +8,13 @@ define('DB_USER', 'root');
 define('DB_PASSWORD', 'bonnie');
 define('DB_DBASE', 'db_class_board');
 
+include_once './libraries/margarine/Dialog.php';
+include_once './libraries/margarine/Input.php';
+include_once './libraries/margarine/Response.php';
+include_once './libraries/margarine/Url.php';
+
 include_once './core/Core.php';
 include_once './core/MySQL.php';
-
-
 include_once './models/models.php';
 include_once './controllers/controllers.php';
 
