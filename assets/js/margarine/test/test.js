@@ -4,7 +4,8 @@ QUnit.test('should parse the response with context variables', function (assert)
     data = {
       scripts: ["var Template = _.template($(context.table_data).html()),\n\
         items = ['name1', 'name2', 'name3', 'name4'],\n\
-        data = {items: items};$(context.record_table).html(Template(data));"]
+        data = {items: items};\n\
+        $(context.record_table).html(Template(data));"]
     };
 
   $.ajax = function (url, settings) {

@@ -8,10 +8,11 @@ class Board extends Model {
     return $result[0]["id"] + 1;
   }
 
-  public function create($title, $chalkmarks, $audio_file) {
+  public function create($title, $description, $chalkmarks, $audio_file) {
     $id = $this->generate_id();
-    $sql = "INSERT INTO boards SET id = '" . $id . "' ,"
+    $sql = "INSERT INTO boards SET id = '" . $id . "',"
             . "title = '". $title ."',"
+            . "description = '".$description."',"
             . "chalkmarks = '". $chalkmarks ."',"
             . "audio_file = '". $audio_file ."';";
     return $this->db->ExecuteSQL($sql);
@@ -22,11 +23,7 @@ class Board extends Model {
     $result = $this->db->ExecuteSQL($sql);
     return $result;
   }
-
-  public function update() {
-    
-  }
-
+  
   public function delete($id = '%') {
     $sql = "SELECT * FROM boards WHERE id Like '". $id ."';";
     $result = $this->db->ExecuteSQL($sql);

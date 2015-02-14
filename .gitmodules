@@ -4,6 +4,4 @@
 [submodule "assets/js/underscore"]
 	path = assets/js/underscore
 	url = git@github.com:jashkenas/underscore.git
-[submodule "assets/js/raphael"]
-	path = assets/js/raphael
-	url = git@github.com:ianli/raphael-sketchpad.git
+

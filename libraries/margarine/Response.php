@@ -73,11 +73,10 @@ class Response {
 			text: "Ok",
 			click: function() {
 				CIS.Ajax.request('{$this->url->uri()}', {
-                                        type: 'POST',
-                                        context:context,
-                                        data: '_dialog_confirmed=1&&_dialog_id={$dialog_id}'
-                                                                         }
-                                                 );
+        type: 'POST',
+        context:context,
+        data: '_dialog_confirmed=1&&_dialog_id={$dialog_id}'
+        });
 			}
 		},
 		{

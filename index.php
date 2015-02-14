@@ -30,12 +30,16 @@ Class RouteEngine extends Core {
         $this->load->_Class('BoardsController');
         $this->boardscontroller->index();
         break;
+      case '/create':
+        $this->load->_Class('BoardsController');
+        $this->boardscontroller->create();
+        break;
       case "/ajaxifyCreate":
         $this->load->_Class('BoardsController');
         $this->boardscontroller->ajaxifyCreate();
         break;
       case "/retrieve":
-        $id = isset($_GET['id']) ? $_GET['id'] : '%';
+        $id = $_GET['id'];
         $this->load->_CLASS("BoardsController");
         $this->boardscontroller->retrieve($id);
         break;

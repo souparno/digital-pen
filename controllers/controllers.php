@@ -19,12 +19,19 @@ class BoardsController extends Controller {
   }
 
   public function index() {
+    $data = $this->board->retrieve();
+    require_once './views/board/index.php';
+  }
+
+  public function create() {
     require_once './views/board/create.php';
   }
+
   public function ajaxifyCreate() {
     if (sizeof($_POST) && isset($_FILES["blob"])) {
       
-      $title = 'something';
+      $title = $_POST['title'];
+      $description = $_POST['description'];
       $chalkmarks = $_POST['chalkmarks'];
       $fileName = $this->generate_file_id();
       $uploadDirectory = './uploads/' . $fileName;      
@@ -35,20 +42,11 @@ class BoardsController extends Controller {
           'content' => "problem, moving file to '.$uploadDirectory.'"
         ));
       } else {
-        if($this->board->create($title, $chalkmarks, $fileName)){
-          $script = <<< JS
-              var Template = _.template($('table-data').html()),
-              items = ['name1', 'name2', 'name3', 'name4'],
-              data = {items: items};
-
-            $('record-table').html(Template(data));
-JS;
-          $this->response->script($script);
+        if($this->board->create($title, $description, $chalkmarks, $fileName)){
           $this->response->dialog(array(
             'title' => 'saved',
             'content' => "The data was saved successfully"
-          ));
-          
+          ));          
         } else {
             $this->response->dialog(array(
             'title' => 'save failed',
@@ -60,7 +58,7 @@ JS;
     }    
   }
 
-  public function retrieve($id = '%') {
+  public function retrieve($id) {
     $data = $this->board->retrieve($id);
     require_once './views/board/retrieve.php';
   }
