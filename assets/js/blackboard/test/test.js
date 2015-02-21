@@ -1,7 +1,7 @@
 QUnit.module('Queue', {
   beforeEach: function () {
     this.queue = new Queue();
-    this.startTime = (new Date()).getTime();
+    this.queue.reset();
   }
 });
 

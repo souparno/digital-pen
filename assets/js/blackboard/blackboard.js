@@ -15,7 +15,7 @@ var Action = Point.Extend({
 
 var Queue = (function () {
  var array = [],
-    lastTimeSlot = null;
+  lastTimeSlot = null;
 
   return  Class.Create({
     reset: function () {
