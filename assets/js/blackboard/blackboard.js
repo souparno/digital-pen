@@ -145,18 +145,25 @@ var Board = (function (){
     },
     
     getRecording: function () {
-      return queue.get();      
+      return {board:{
+          width: width,
+          height: height
+        }, actions: queue.get()};      
     },
     
     clearRecording: function () {
       queue.clear();
     },
     
-    playRecording: function (actionList) {
-      if(actionList){
-        queue.set(actionList);
-      }      
+    playRecording: function (params) {
+      var ratioX = width / params.board.width,
+        ratioY = height / params.board.height;
+
+      queue.set(params.actions);
       queue.forEachpop(function(x, y, type) {
+        var x = x * ratioX,
+          y = y * ratioY;
+        
         switch(type){
           case 0:
             pen.moveTo(x, y);

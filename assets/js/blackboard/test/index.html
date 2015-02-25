@@ -8,12 +8,14 @@
   <body>
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
-    <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="500" height="400"></canvas>    
+    <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="600" height="400"></canvas>    
     <br/>
-    <button id="start-record">Start Record</button>
-    <button id="stop-record">Stop record</button>
-    <button id="clear-board">clear board</button>
-    <button id="play-record">Play Record</button>
+    <button id="start-record">Record</button>
+    <button id="stop-record">Stop</button>
+    <br/>
+    <canvas id="canvas2" style="border: medium; border-color: #00F; border-style: solid;" width="300" height="200"></canvas>
+    <br/>
+    <button id="play-record">play</button>
     <script src="../../jquery/jquery-1.11.2.min.js"></script>
     <script src="vendor/qunit-1.16.0.js"></script>
     <script src="../../mini/mini.js"></script>
@@ -24,19 +26,18 @@
         Board.initialise('canvas1');
 
         $('#start-record').click(function () {
-          console.log('record started');
-          Board.startRecording();
+          Board.startRecording();          
         });
         
         $('#stop-record').click(function () {
-          console.log('record stopped');
           Board.stopRecording();
+          Board.clearCanvas();
         });
         
         $('#play-record').click(function () {
-          console.log('record playing');
-          Board.clearCanvas();
-          Board.playRecording();
+          var recordings = Board.getRecording();
+          Board.initialise('canvas2');
+          Board.playRecording(recordings);      
         });
         
         $('#clear-board').click(function () {
