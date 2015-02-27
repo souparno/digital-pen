@@ -81,11 +81,12 @@ var Pen = (function () {
 }());
 
 var Board = (function () {
-  var height, width, canvas, _context, pen;
+  var height, width, _context, pen;
 
   return Class.Create({
     init: function (elm) {
-      canvas = $('#' + elm).get(0);
+      var canvas = $('#' + elm).get(0);
+
       _context = canvas.getContext('2d');
       height = $(canvas).height();
       width = $(canvas).width();
@@ -112,10 +113,10 @@ var Board = (function () {
 
         switch (type) {
           case 0:
-            pen.moveTo(x, y, _context);
+            pen.moveTo(x, y);
             break;
           case 1:
-            pen.draw(x, y, _context);
+            pen.draw(x, y);
             break;
         }
       }.bind(this));
@@ -170,7 +171,7 @@ var Record = (function () {
       return false;
     },
     pushToQueue = function (x, y, type) {
-      if (_mouseDown && isRecording) {
+      if (_mouseDown && _isRecording) {
         Queue.push(x, y, type);
       }
     },
@@ -180,13 +181,18 @@ var Record = (function () {
       $(document).unbind('mouseup');
     },
     _mouseDown = false,
-    isRecording = false;
+    _isRecording = false;
   return {
-    start: function (onStop) {
+    start: function (onStop, elm) {
+      //This part of the code is to be removed later
+      var canvas = $('#' + elm).get(0);
+      var _context = canvas.getContext('2d');
+      var pen = new Pen(_context);
+      //End of the dummy code
       var pointer = new Pointer($(document.body));
 
       pointer.lock(function () {
-        isRecording = true;
+        _isRecording = true;
         cleanMouseEvents();
         $(document).bind('mousedown', mouseDown);
         $(document).bind('mousemove', mouseMove);
@@ -198,7 +204,7 @@ var Record = (function () {
     },
     stop: function (callback) {
       cleanMouseEvents();
-      isRecording = false;
+      _isRecording = false;
       callback();
     },
     /* @param (string) canvas_elm

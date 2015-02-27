@@ -1,0 +1,21 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/home/bonnie/.nvm/v0.10.33/bin/npm', 'view' ]
+2 info using npm@2.1.8
+3 info using node@v0.10.33
+4 verbose stack Error: Invalid package.json
+4 verbose stack     at /home/bonnie/.nvm/v0.10.33/lib/node_modules/npm/lib/view.js:79:30
+4 verbose stack     at /home/bonnie/.nvm/v0.10.33/lib/node_modules/npm/node_modules/read-package-json/read-json.js:51:40
+4 verbose stack     at /home/bonnie/.nvm/v0.10.33/lib/node_modules/npm/node_modules/read-package-json/read-json.js:97:49
+4 verbose stack     at evalmachine.<anonymous>:207:20
+4 verbose stack     at OpenReq.Req.done (/home/bonnie/.nvm/v0.10.33/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:141:5)
+4 verbose stack     at OpenReq.done (/home/bonnie/.nvm/v0.10.33/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:61:22)
+4 verbose stack     at Object.oncomplete (evalmachine.<anonymous>:107:15)
+5 verbose cwd /home/bonnie/workspace/new Project/mimi
+6 error Linux 3.13.0-36-generic
+7 error argv "node" "/home/bonnie/.nvm/v0.10.33/bin/npm" "view"
+8 error node v0.10.33
+9 error npm  v2.1.8
+10 error Invalid package.json
+11 error If you need help, you may report this error at:
+11 error     <http://github.com/npm/npm/issues>
+12 verbose exit [ 1, true ]

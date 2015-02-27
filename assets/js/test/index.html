@@ -3,7 +3,7 @@
     <title>Iron Man Test Cases</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="vendor/qunit-1.16.0.css">
+    <link rel="stylesheet" href="lib/qunit-1.16.0.css">
   </head>
   <body>
     <div id="qunit"></div>
@@ -11,40 +11,31 @@
     <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="600" height="400"></canvas>    
     <br/>
     <button id="start-record">Record</button>
-    <button id="stop-record">Stop</button>
     <br/>
     <canvas id="canvas2" style="border: medium; border-color: #00F; border-style: solid;" width="300" height="200"></canvas>
     <br/>
     <button id="play-record">play</button>
-    <script src="../../jquery/jquery-1.11.2.min.js"></script>
-    <script src="vendor/qunit-1.16.0.js"></script>
-    <script src="../../mini/mini.js"></script>
+    <script src="../lib/jquery-1.11.2.min.js"></script>
+    <script src="lib/qunit-1.16.0.js"></script>
+    <script src="../mini.js"></script>
     <script src="../blackboard.js"></script>
     <script src="test.js"></script>
-<!--    <script>
+    <script>
       $(document).ready(function () {
-        Board.initialise('canvas1');
+        var recording = null;
+
+        var onStop = function () {
+          recording = Record.get();
+        };
 
         $('#start-record').click(function () {
-          Board.startRecording();          
+          Record.start(onStop);
         });
-        
-        $('#stop-record').click(function () {
-          Board.stopRecording();
-          Board.clearCanvas();
-        });
-        
+
         $('#play-record').click(function () {
-          var recordings = Board.getRecording();
-          Board.initialise('canvas2');
-          Board.playRecording(recordings);      
-        });
-        
-        $('#clear-board').click(function () {
-          console.log('clear canvas is clicked');
-          Board.clearCanvas();
+          Record.play('canvas2', recording);
         });
       });
-    </script>-->
+    </script>
   </body>
 </html>

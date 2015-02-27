@@ -1,7 +1,0 @@
-[submodule "assets/js/mini"]
-	path = assets/js/mini
-	url = git@github.com:souparno/mini.js.git
-[submodule "assets/js/underscore"]
-	path = assets/js/underscore
-	url = git@github.com:jashkenas/underscore.git
-
