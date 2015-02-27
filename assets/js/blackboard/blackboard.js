@@ -70,12 +70,10 @@ var Pen = (function () {
       _context = cntxt;
     },
     moveTo: function (x, y) {
-      console.log('moved to x', x,'y',y);
       _context.beginPath();
       _context.moveTo(x, y);
     },
     draw: function (x, y) {
-      console.log('draw to x', x,'y',y);
       _context.lineTo(x, y);
       _context.stroke();
     }
@@ -234,7 +232,7 @@ var Record = (function () {
 }());
 
 var Pointer = (function () {
-  var lockToggle = function () {
+  var lockToggle = function (onEnter, onExit) {
     if ((document.pointerLockElement === element ||
       document.msPointerLockElement === element ||
       document.mozPointerLockElement === element ||
@@ -243,14 +241,15 @@ var Pointer = (function () {
       onEnter();
     } else if (typeof onExit === 'function') {
       onExit();
-    }
-  },
-  isPointerLockSupported =
-    'pointerLockElement' in document ||
-    'msPointerLockElement' in document ||
-    'mozPointerLockElement' in document ||
-    'webkitPointerLockElement' in document,
-  element = null, onEnter = null, onExit = null;
+    }},
+    isPointerLockSupported = function () {
+      var lockSupport = 'pointerLockElement' in document ||
+      'msPointerLockElement' in document ||
+      'mozPointerLockElement' in document ||
+      'webkitPointerLockElement' in document;
+    
+      return lockSupport; },
+    element = null;
 
   return Class.Create({
     init: function (elm) {
@@ -261,22 +260,23 @@ var Pointer = (function () {
         element.mozRequestPointerLock ||
         element.webkitRequestPointerLock;
     },
-    lock: function (_onEnter, _onExit) {
-      if (!isPointerLockSupported) {
+    lock: function (onEnter, onExit) {
+      if (!isPointerLockSupported()) {
         return false;
       }
-      onEnter = _onEnter;
-      onExit = _onExit;
       element.requestPointerLock();
       $(document).unbind('pointerlockchange');
       $(document).unbind('mspointerlockchange');
       $(document).unbind('mozpointerlockchange');
       $(document).unbind('webkitpointerlockchange');
-
-      $(document).bind('pointerlockchange', lockToggle);
-      $(document).bind('mspointerlockchange', lockToggle);
-      $(document).bind('mozpointerlockchange', lockToggle);
-      $(document).bind('webkitpointerlockchange', lockToggle);
+      $(document).bind('pointerlockchange',
+        lockToggle.bind(undefined, onEnter, onExit));
+      $(document).bind('mspointerlockchange',
+        lockToggle.bind(undefined, onEnter, onExit));
+      $(document).bind('mozpointerlockchange',
+        lockToggle.bind(undefined, onEnter, onExit));
+      $(document).bind('webkitpointerlockchange',
+        lockToggle.bind(undefined, onEnter, onExit));
       return true;
     }
   });
