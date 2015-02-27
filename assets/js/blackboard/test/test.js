@@ -1,4 +1,4 @@
-// PhantomJS doesn't support bind yet
+// PhantomJS 1.9.8 doesn't support bind yet
 Function.prototype.bind = Function.prototype.bind || function (thisp) {
   var fn = this, args = arguments;
 
