@@ -76,6 +76,8 @@ var Board = (function () {
     lineTo: function (x, y) {
       if (canvas) {
         cntxt.lineTo(x, y);
+        cntxt.lineWidth = 2;
+        cntxt.strokeStyle = 'black';
         cntxt.stroke();
       } else {
         Queue.push(x, y, 1);
@@ -127,8 +129,8 @@ var Board = (function () {
       Queue.forEachpop(function (X, Y, type) {
         var ratioX = width / (maxX - minX),
           ratioY = height / (maxY - minY),
-          x = (X * ratioX) + (minX < 0 ? (-1 * minX * ratioX) : 0),
-          y = (Y * ratioY) + (minY < 0 ? (-1 * minY * ratioY) : 0);
+          x = ((X + (minX < 0 ? (-1 * minX) : 0))* ratioX),
+          y = ((Y + (minY < 0 ? (-1 * minY) : 0)) * ratioY);
 
         switch (type) {
           case 0:
