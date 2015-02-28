@@ -53,8 +53,8 @@ var Queue = (function () {
     get: function () {
       return array;
     },
-    set: function (actionArgs) {
-      array = actionArgs;
+    set: function (_array) {
+      array = _array;
     },
     clear: function () {
       array = [];
@@ -62,199 +62,196 @@ var Queue = (function () {
   };
 }());
 
-var Pen = (function () {
-  var _context = null;
-
-  return Class.Create({
-    init: function (cntxt) {
-      _context = cntxt;
-    },
-    moveTo: function (x, y) {
-      _context.beginPath();
-      _context.moveTo(x, y);
-    },
-    draw: function (x, y) {
-      _context.lineTo(x, y);
-      _context.stroke();
-    }
-  });
-}());
-
 var Board = (function () {
-  var height, width, _context, pen;
+  var Pen = Class.Create({
+    moveTo: function (x, y) {
+      if (canvas) {
+        cntxt.beginPath();
+        cntxt.moveTo(x, y);
+      } else {
+        Queue.push(x, y, 0);
+        resetBounds(x, y);
+      }
+    },
+    lineTo: function (x, y) {
+      if (canvas) {
+        cntxt.lineTo(x, y);
+        cntxt.stroke();
+      } else {
+        Queue.push(x, y, 1);
+        resetBounds(x, y);        
+      }
+    }}),
+    resetBounds = function (x, y) {
+      if (x < minX) {
+        minX = x;
+      } else if (x > maxX) {
+        maxX = x;
+      }
+      if (y < minY) {
+        minY = y;
+      } else if (y > maxY) {
+        maxY = y;
+      }
+    },
+    canvas = null,
+    cntxt = null,
+    height = 0,
+    width = 0,
+    minX = 0,
+    maxX = 0,
+    minY = 0,
+    maxY = 0;
 
   return Class.Create({
-    init: function (elm) {
-      var canvas = $('#' + elm).get(0);
+    init: function (elm, bound) {
+      var ratio = 0;
 
-      _context = canvas.getContext('2d');
-      height = $(canvas).height();
-      width = $(canvas).width();
-      pen = new Pen(_context);
+      if (elm) {
+        canvas = $(elm).get(0);
+        cntxt = canvas.getContext('2d');
+        minX = bound.minX;
+        maxX = bound.maxX;
+        minY = bound.minY;
+        maxY = bound.maxY;
+        ratio = (maxY - minY) / (maxX - minX);        
+        width = $(canvas).width();
+        height = ratio * width;
+        $(canvas).height(height);
+      }
+      Queue.reset();
+      this.pen = new Pen();
     },
-    /*
-     * @param (object) params :
-     * {
-     *   board: {
-     *     width: --
-     *     height: --
-     *   },
-     *   actions: [array]
-     * }
-     */
-    playRecording: function (params) {
-      var ratioX = width / params.board.width,
-        ratioY = height / params.board.height;
-
-      Queue.set(params.actions);
-      Queue.forEachpop(function (_x, _y, type) {
-        var x = _x * ratioX,
-          y = _y * ratioY;
+    playRecording: function (recording) {
+      Queue.set(recording);
+      Queue.forEachpop(function (X, Y, type) {
+        var ratioX = width / (maxX - minX),
+          ratioY = height / (maxY - minY),
+          x = (X * ratioX) + (minX < 0 ? (-1 * minX * ratioX) : 0),
+          y = (Y * ratioY) + (minY < 0 ? (-1 * minY * ratioY) : 0);
 
         switch (type) {
           case 0:
-            pen.moveTo(x, y);
+            this.pen.moveTo(x, y);
             break;
           case 1:
-            pen.draw(x, y);
+            this.pen.lineTo(x, y);
             break;
         }
       }.bind(this));
     },
+    get: function () {
+      return {
+        bound: {
+          minX: minX,
+          maxX: maxX,
+          minY: minY,
+          maxY: maxY
+        },
+        queue: Queue.get()
+      };
+    },
     clear: function () {
-      _context.fillStyle = 'rgb(255,255,255)';
-      _context.fillRect(0, 0, width, height);
+      cntxt.fillStyle = 'rgb(255,255,255)';
+      cntxt.fillRect(0, 0, width, height);
+      Queue.clear();
     }
   });
 }());
 
 var Record = (function () {
-  var x = 0, y = 0, maxX = 0, maxY = 0,
-    getMovement = function (e) {
-      var movementX = e.originalEvent.movementX ||
-        e.originalEvent.mozMovementX ||
-        e.originalEvent.webkitMovementX ||
+  var getMovement =
+    function (e) {
+      var movementX = e.movementX ||
+        e.mozMovementX ||
+        e.webkitMovementX ||
         0,
-        movementY = e.originalEvent.movementY ||
-        e.originalEvent.mozMovementY ||
-        e.originalEvent.webkitMovementY ||
+        movementY = e.movementY ||
+        e.mozMovementY ||
+        e.webkitMovementY ||
         0;
 
       x += movementX;
       y += movementY;
-      if (x > maxX) {
-        maxX = x;
-      }
-      if (y > maxY) {
-        maxY = y;
-      }
-      return {
-        x: x,
-        y: y
-      };
     },
     mouseDown = function (e) {
-      var move = getMovement(e);
-
       _mouseDown = true;
-      pushToQueue(move.x, move.y, 0);
+      getMovement(e);
+      board.pen.moveTo(x, y);
       return false;
     },
     mouseMove = function (e) {
-      var move = getMovement(e);
-
-      pushToQueue(move.x, move.y, 1);
+      getMovement(e);
+      if (_mouseDown) {
+        board.pen.lineTo(x, y);
+      }
       return false;
     },
     mouseUp = function () {
       _mouseDown = false;
       return false;
     },
-    pushToQueue = function (x, y, type) {
-      if (_mouseDown && _isRecording) {
-        Queue.push(x, y, type);
-      }
-    },
     cleanMouseEvents = function () {
-      $(document).unbind('mousedown');
-      $(document).unbind('mousemove');
-      $(document).unbind('mouseup');
+      document.removeEventListener("mousedown", mouseDown, false);
+      document.removeEventListener("mousemove", mouseMove, false);
+      document.removeEventListener("mouseup", mouseUp, false);
     },
+    x = 0,
+    y = 0,
     _mouseDown = false,
-    _isRecording = false;
+    board = null;
+
   return {
-    start: function (onStop, elm) {
-      //This part of the code is to be removed later
-      var canvas = $('#' + elm).get(0);
-      var _context = canvas.getContext('2d');
-      var pen = new Pen(_context);
-      //End of the dummy code
+    start: function (onStop) {
       var pointer = new Pointer($(document.body));
 
       pointer.lock(function () {
-        _isRecording = true;
+        board = new Board();
         cleanMouseEvents();
-        $(document).bind('mousedown', mouseDown);
-        $(document).bind('mousemove', mouseMove);
-        $(document).bind('mouseup', mouseUp);
-        Queue.reset();
+        document.addEventListener("mousedown", mouseDown, false);
+        document.addEventListener("mousemove", mouseMove, false);
+        document.addEventListener("mouseup", mouseUp, false);        
       }, function () {
         this.stop(onStop);
       }.bind(this));
     },
     stop: function (callback) {
       cleanMouseEvents();
-      _isRecording = false;
       callback();
     },
-    /* @param (string) canvas_elm
-     * @param (object) recording :
-     * {
-     *   board: {
-     *     width: --
-     *     height: --
-     *   },
-     *   actions: [array]
-     * }
-     */
     play: function (canvas_elm, recording) {
-      var board = new Board(canvas_elm);
-
-      board.playRecording(recording);
+      board = new Board(canvas_elm, recording.bound);
+      board.playRecording(recording.queue);
     },
     get: function () {
-      return {
-        board: {
-          width: maxX,
-          height: maxY
-        },
-        actions: Queue.get()
-      };
+      return board.get();
     },
     clear: function () {
-      Queue.clear();
+      board.clear();
     }
   };
 }());
 
 var Pointer = (function () {
-  var lockToggle = function (onEnter, onExit) {
-    if ((document.pointerLockElement === element ||
-      document.msPointerLockElement === element ||
-      document.mozPointerLockElement === element ||
-      document.webkitPointerLockElement === element) &&
-      (typeof onEnter === 'function')) {
-      onEnter();
-    } else if (typeof onExit === 'function') {
-      onExit();
-    }},
+  var lockToggle =
+    function (onEnter, onExit) {
+      if ((document.pointerLockElement === element ||
+        document.msPointerLockElement === element ||
+        document.mozPointerLockElement === element ||
+        document.webkitPointerLockElement === element) &&
+        (typeof onEnter === 'function')) {
+        onEnter();
+      } else if (typeof onExit === 'function') {
+        onExit();
+      }
+    },
     isPointerLockSupported = function () {
       var lockSupport = 'pointerLockElement' in document ||
-      'msPointerLockElement' in document ||
-      'mozPointerLockElement' in document ||
-      'webkitPointerLockElement' in document;
-    
-      return lockSupport; },
+        'msPointerLockElement' in document ||
+        'mozPointerLockElement' in document ||
+        'webkitPointerLockElement' in document;
+      return lockSupport;
+    },
     element = null;
 
   return Class.Create({
