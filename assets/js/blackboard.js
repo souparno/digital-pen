@@ -117,7 +117,7 @@ var Board = (function () {
         ratio = (maxY - minY) / (maxX - minX);        
         width = $(canvas).width();
         height = ratio * width;
-        $(canvas).height(height);
+        $(canvas).attr('height', height);
       }
       Queue.reset();
       this.pen = new Pen();
