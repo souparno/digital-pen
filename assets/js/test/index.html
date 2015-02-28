@@ -11,15 +11,12 @@
     <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="600" height="400"></canvas>    
     <br/>
     <button id="start-record">Record</button>
-    <br/>
-    <canvas id="canvas2" style="border: medium; border-color: #00F; border-style: solid;" width="300" height="200"></canvas>
-    <br/>
     <button id="play-record">play</button>
     <script src="../lib/jquery-1.11.2.min.js"></script>
     <script src="lib/qunit-1.16.0.js"></script>
     <script src="../mini.js"></script>
     <script src="../blackboard.js"></script>
-    <script src="test.js"></script>
+    <script src="blackboard.js"></script>
     <script>
       $(document).ready(function () {
         var recording = null;
@@ -33,7 +30,7 @@
         });
 
         $('#play-record').click(function () {
-          Record.play('canvas2', recording);
+          Record.play($('#canvas1'), recording);
         });
       });
     </script>

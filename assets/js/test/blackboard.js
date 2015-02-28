@@ -1,16 +1,23 @@
 // PhantomJS 1.9.8 doesn't support bind yet
-Function.prototype.bind = Function.prototype.bind || function (thisp) {
-  var fn = this, args = arguments;
+Function.prototype.bind = Function.prototype.bind ||
+  function (ctx) {
+    var fn = this,
+      args = [],
+      param_length = 0;
 
-  for(var i=0; i<args.length; i++) {    
-    if(i){
-      args[i-1] = arguments[i];
+    for(var i=0; i<arguments.length; i++) {    
+      if(i){
+        args[i-1] = arguments[i];
+      }
     }
-  }
-  return function () {
-    return fn.apply(thisp, args);
+    param_length = args.length;
+    return function () {
+      for(var i =0; i<arguments.length; i++){
+        args[param_length + i] = arguments[i];
+      }
+      return fn.apply(ctx, args);
+    };
   };
-};
 
 QUnit.module('Queue', {
   beforeEach: function () {
@@ -90,62 +97,111 @@ QUnit.asyncTest('push', function (assert) {
 //  loop.call(this, temp_pointList.length, temp_intervals.shift());
 //});
 
-QUnit.module('Pen');
-QUnit.test('moveTo', function (assert) {
-  var beginPath_called = false,
-    moveTo_x = null,
-    moveTo_y = null,
-    _context = {
-      moveTo: function (x, y) {
-        moveTo_x = x;
-        moveTo_y = y;
-      },
-      beginPath: function () {
-        beginPath_called = true;
-      }
-    },
-    pen = new Pen(_context);
-
-  pen.moveTo(1, 2);
-  assert.equal(true, beginPath_called);
-  assert.equal(moveTo_x, 1);
-  assert.equal(moveTo_y, 2);
-});
-QUnit.test('draw', function (assert) {
-  var stroke_called = false,
-    line_x = null,
-    line_y = null,
-    _context = {
-      stroke: function () {
-        stroke_called = true;
-      },
-      lineTo: function (x, y) {
-        line_x = x;
-        line_y = y;
-      }
-    },
-    pen = new Pen(_context);
-   
-  pen.draw(1, 2);
-  assert.equal(true, stroke_called);
-  assert.equal(line_x, 1);
-  assert.equal(line_y, 2);
-});
-
-//QUnit.module('Record');
-//QUnit.test('start', function (assert) {
-//  var count_event =0;
-//  
-//  Record.start();
-//  for(var key in $._data( $(document)[0], "events" )){
-//    count_event++;
-//  }
-//  assert.equal(count_event, 4);
+//QUnit.module('Pen');
+//QUnit.test('moveTo', function (assert) {
+//  var beginPath_called = false,
+//    moveTo_x = null,
+//    moveTo_y = null,
+//    _context = {
+//      moveTo: function (x, y) {
+//        moveTo_x = x;
+//        moveTo_y = y;
+//      },
+//      beginPath: function () {
+//        beginPath_called = true;
+//      }
+//    },
+//    pen = new Pen(_context);
+//
+//  pen.moveTo(1, 2);
+//  assert.equal(true, beginPath_called);
+//  assert.equal(moveTo_x, 1);
+//  assert.equal(moveTo_y, 2);
 //});
+//QUnit.test('draw', function (assert) {
+//  var stroke_called = false,
+//    line_x = null,
+//    line_y = null,
+//    _context = {
+//      stroke: function () {
+//        stroke_called = true;
+//      },
+//      lineTo: function (x, y) {
+//        line_x = x;
+//        line_y = y;
+//      }
+//    },
+//    pen = new Pen(_context);
+//   
+//  pen.draw(1, 2);
+//  assert.equal(true, stroke_called);
+//  assert.equal(line_x, 1);
+//  assert.equal(line_y, 2);
+//});
+
+QUnit.module('Board', {
+  beforeEach: function () {
+    var obj = {
+      get: function () {
+        return {
+          getContext: function () {}
+        }; 
+      },
+      width: function () { return 100; },
+      height: function (param) { return param; }
+    };
+
+    this.$ = $;
+    $ = function () { return obj;};
+  },
+  afterEach: function () {
+    $ = this.$;
+  }
+});
+QUnit.asyncTest('playRecording', function (assert) {
+  var bound = {
+      minX : -4,
+      maxX: 196,
+      minY: -2,
+      maxY: 98,
+      actions: []
+    },
+    check_against = [
+      {
+        x: 0,
+        y: 0
+      },
+      {
+        x: 47,
+        y: 21
+      }
+    ],
+    board = new Board(true, bound);
+
+  board.pen.moveTo = function (x, y) {
+    var point = check_against.shift();
+
+    assert.equal(x, point.x);
+    assert.equal(y, point.y);
+    if(!check_against.length) {
+      QUnit.start();
+    }
+  };
+  board.playRecording([
+    {x:-4, y:-2, type:0, interval:0},
+    {x:90, y:40, type:0, interval:1}
+  ]);
+});
 
 QUnit.module('Pointer', {
   beforeEach: function () {
     this.pointer = new Pointer($(document.body));
+    this.pointerLockElement = document.pointerLockElement;
+
+    document.pointerLockElement = document.body;
+  },
+  afterEach: function () {
+    document.pointerLockElement = this.pointerLockElement;
   }
 });
 QUnit.test('lock enter should call the enter function', function (assert) {
@@ -153,17 +209,14 @@ QUnit.test('lock enter should call the enter function', function (assert) {
     onEnter = function () {
       enter = true;
     }, 
-    temp_pointerLockElement = document.pointerLockElement,
     temp_requestPointerLock = document.body.requestPointerLock;
     
-  document.pointerLockElement = document.body;
   document.body.requestPointerLock = function () {
     return true;
   };
   this.pointer.lock(onEnter, undefined);
   $(document).trigger('pointerlockchange');
   assert.equal(enter, true);
-  document.pointerLockElement = temp_pointerLockElement;
   document.body.requestPointerLock = temp_requestPointerLock;
 });
 QUnit.test('lock exit should call the exit function', function (assert) {
