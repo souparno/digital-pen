@@ -36,28 +36,26 @@
     <p>
       <audio controls src="" id="audio"></audio>
       <br/>
-      <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="500" height="400"></canvas>      
+          <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="1000"></canvas>    
       <br/>
       <input type="button" id="playBtn" value="Play" style="display: inline-block;"> 
     </p>
     <p id="topics"></p>
-    <script src="./assets/js/jquery/jquery-1.11.2.min.js" type="text/javascript"></script>
+    <script src="./assets/js/lib/jquery-1.11.2.min.js"></script>
     <script src="./assets/js/audio/recorder.js"></script>
     <script src="./assets/js/audio/jquery.voice.min.js"></script>
-    <script src="./assets/js/mini/mini.js"></script>
-    <script src="./assets/js/blackboard/blackboard.js" type="text/javascript"></script>
+    <script src="./assets/js/mini.js"></script>
+    <script src="./assets/js/pointerlock.js"></script>
+    <script src="./assets/js/blackboard.js"></script>
     <?php echo $data[0]['chalkmarks'] ?>
     <script>
       $(document).ready(function () {
-        Board.initialise('canvas1');
-
-        $('#playBtn').click(function () {
-          $("#audio").attr("src", '/uploads/<?php echo $data[0]['audio_file'] ?>');
+         $('#playBtn').click(function () {
+          $("#audio").attr("src", '/uploads/<?php echo $data[0]['audio_file']; ?>');
           $("#audio")[0].play();
-          Board.playRecording(<?php echo $data[0]['chalkmarks'] ?>);
+          Record.play($('#canvas1'), <?php echo $data[0]['chalkmarks']; ?>);
         });
-      });
-      
+      });      
     </script>
   </body>
 </html>

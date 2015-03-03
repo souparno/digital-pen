@@ -193,6 +193,11 @@ var Record = (function () {
       _mouseDown = false;
       return false;
     },
+    addMouseEvents = function () {
+      document.addEventListener("mousedown", mouseDown, false);
+      document.addEventListener("mousemove", mouseMove, false);
+      document.addEventListener("mouseup", mouseUp, false);    
+    },
     cleanMouseEvents = function () {
       document.removeEventListener("mousedown", mouseDown, false);
       document.removeEventListener("mousemove", mouseMove, false);
@@ -204,18 +209,14 @@ var Record = (function () {
     board = null;
 
   return {
-    start: function (onStop) {
-      var pointer = new Pointer($(document.body));
-
-      pointer.lock(function () {
+    start: function (onStop, onError) {
+      PointerLock.requestLock($(document.body),function () {
         board = new Board();
         cleanMouseEvents();
-        document.addEventListener("mousedown", mouseDown, false);
-        document.addEventListener("mousemove", mouseMove, false);
-        document.addEventListener("mouseup", mouseUp, false);        
+        addMouseEvents();
       }, function () {
         this.stop(onStop);
-      }.bind(this));
+      }.bind(this), onError);
     },
     stop: function (callback) {
       cleanMouseEvents();
@@ -232,57 +233,4 @@ var Record = (function () {
       board.clear();
     }
   };
-}());
-
-var Pointer = (function () {
-  var lockToggle =
-    function (onEnter, onExit) {
-      if ((document.pointerLockElement === element ||
-        document.msPointerLockElement === element ||
-        document.mozPointerLockElement === element ||
-        document.webkitPointerLockElement === element) &&
-        (typeof onEnter === 'function')) {
-        onEnter();
-      } else if (typeof onExit === 'function') {
-        onExit();
-      }
-    },
-    isPointerLockSupported = function () {
-      var lockSupport = 'pointerLockElement' in document ||
-        'msPointerLockElement' in document ||
-        'mozPointerLockElement' in document ||
-        'webkitPointerLockElement' in document;
-      return lockSupport;
-    },
-    element = null;
-
-  return Class.Create({
-    init: function (elm) {
-      element = $(elm)[0];
-      element.requestPointerLock =
-        element.requestPointerLock ||
-        element.msRequestPointerLock ||
-        element.mozRequestPointerLock ||
-        element.webkitRequestPointerLock;
-    },
-    lock: function (onEnter, onExit) {
-      if (!isPointerLockSupported()) {
-        return false;
-      }
-      element.requestPointerLock();
-      $(document).unbind('pointerlockchange');
-      $(document).unbind('mspointerlockchange');
-      $(document).unbind('mozpointerlockchange');
-      $(document).unbind('webkitpointerlockchange');
-      $(document).bind('pointerlockchange',
-        lockToggle.bind(undefined, onEnter, onExit));
-      $(document).bind('mspointerlockchange',
-        lockToggle.bind(undefined, onEnter, onExit));
-      $(document).bind('mozpointerlockchange',
-        lockToggle.bind(undefined, onEnter, onExit));
-      $(document).bind('webkitpointerlockchange',
-        lockToggle.bind(undefined, onEnter, onExit));
-      return true;
-    }
-  });
 }());
