@@ -17,7 +17,7 @@ var Queue = (function () {
   var array = [],
     lastTimeSlot = null;
 
-  return {
+  return Class.Create({
     reset: function () {
       this.clear();
       lastTimeSlot = (new Date()).getTime();
@@ -59,51 +59,48 @@ var Queue = (function () {
     clear: function () {
       array = [];
     }
-  };
+  });
 }());
 
 var Board = (function () {
-  var Pen = Class.Create({
-    moveTo: function (x, y) {
-      if (canvas) {
-        cntxt.beginPath();
-        cntxt.moveTo(x, y);
-      } else {
-        Queue.push(x, y, 0);
-        resetBounds(x, y);
-      }
-    },
-    lineTo: function (x, y) {
-      if (canvas) {
-        cntxt.lineTo(x, y);
-        cntxt.lineWidth = 2;
-        cntxt.strokeStyle = 'black';
-        cntxt.stroke();
-      } else {
-        Queue.push(x, y, 1);
-        resetBounds(x, y);        
-      }
-    }}),
-    resetBounds = function (x, y) {
-      if (x < minX) {
-        minX = x;
-      } else if (x > maxX) {
-        maxX = x;
-      }
-      if (y < minY) {
-        minY = y;
-      } else if (y > maxY) {
-        maxY = y;
-      }
-    },
-    canvas = null,
+  var canvas = null,
     cntxt = null,
     height = 0,
     width = 0,
     minX = 0,
     maxX = 0,
     minY = 0,
-    maxY = 0;
+    maxY = 0,
+    Pen = (function () {
+      var getCoordinate = function (X, Y) {
+        var ratioX = width / (maxX - minX),
+          ratioY = height / (maxY - minY),
+          x = ((X + (minX < 0 ? (-1 * minX) : 0))* ratioX),
+          y = ((Y + (minY < 0 ? (-1 * minY) : 0)) * ratioY);
+
+        return {
+          x: x,
+          y: y
+        };
+      };
+
+      return Class.Create({
+        moveTo: function (x, y) {
+          var pos = getCoordinate(x, y);
+
+          cntxt.beginPath();
+          cntxt.moveTo(pos.x, pos.y);
+        },
+        lineTo: function (x, y) {
+          var pos = getCoordinate(x, y);
+
+          cntxt.lineTo(pos.x, pos.y);
+          cntxt.lineWidth = 2;
+          cntxt.strokeStyle = 'black';
+          cntxt.stroke();
+        }
+      });
+  }());
 
   return Class.Create({
     init: function (elm, bound) {
@@ -120,77 +117,86 @@ var Board = (function () {
         width = $(canvas).width();
         height = ratio * width;
         $(canvas).attr('height', height);
-      }
-      Queue.reset();
-      this.pen = new Pen();
+        this.pen = new Pen();
+      }      
     },
-    playRecording: function (recording) {
-      Queue.set(recording);
-      Queue.forEachpop(function (X, Y, type) {
-        var ratioX = width / (maxX - minX),
-          ratioY = height / (maxY - minY),
-          x = ((X + (minX < 0 ? (-1 * minX) : 0))* ratioX),
-          y = ((Y + (minY < 0 ? (-1 * minY) : 0)) * ratioY);
-
-        switch (type) {
-          case 0:
-            this.pen.moveTo(x, y);
-            break;
-          case 1:
-            this.pen.lineTo(x, y);
-            break;
-        }
-      }.bind(this));
+    resetBoundary: function (x, y) {
+      if (x < minX) {
+        minX = x;
+      } else if (x > maxX) {
+        maxX = x;
+      }
+      if (y < minY) {
+        minY = y;
+      } else if (y > maxY) {
+        maxY = y;
+      }
     },
     get: function () {
       return {
-        bound: {
-          minX: minX,
-          maxX: maxX,
-          minY: minY,
-          maxY: maxY
-        },
-        queue: Queue.get()
+        minX: minX,
+        maxX: maxX,
+        minY: minY,
+        maxY: maxY
       };
     },
     clear: function () {
       cntxt.fillStyle = 'rgb(255,255,255)';
       cntxt.fillRect(0, 0, width, height);
-      Queue.clear();
     }
   });
 }());
 
 var Record = (function () {
   var getMovement =
-    function (e) {
-      var movementX = e.movementX ||
-        e.mozMovementX ||
-        e.webkitMovementX ||
-        0,
-        movementY = e.movementY ||
-        e.mozMovementY ||
-        e.webkitMovementY ||
-        0;
+    (function () {
+      var x =0, y=0;
 
-      x += movementX;
-      y += movementY;
-    },
+      return function (e) {
+        var movementX = e.movementX ||
+          e.mozMovementX ||
+          e.webkitMovementX ||
+          0,
+          movementY = e.movementY ||
+          e.mozMovementY ||
+          e.webkitMovementY ||
+          0;
+
+        x += movementX;
+        y += movementY;
+        return {
+          x: x,
+          y: y
+        };
+      };
+    }()),
     mouseDown = function (e) {
-      _mouseDown = true;
-      getMovement(e);
-      board.pen.moveTo(x, y);
+      var movement = getMovement(e),
+        x = movement.x,
+        y = movement.y;
+
+      mousedown = true;
+      queue.push(x, y, 0);
+      board.resetBoundary(x, y);
       return false;
     },
     mouseMove = function (e) {
-      getMovement(e);
-      if (_mouseDown) {
-        board.pen.lineTo(x, y);
+      var movement= null,
+        x = 0,
+        y = 0;
+
+      if (mousedown) {
+        movement = getMovement(e);
+        x = movement.x;
+        y = movement.y;
+
+        queue.push(x, y, 1);
+        board.resetBoundary(x, y);
       }
       return false;
     },
     mouseUp = function () {
-      _mouseDown = false;
+      mousedown = false;
       return false;
     },
     addMouseEvents = function () {
@@ -203,33 +209,48 @@ var Record = (function () {
       document.removeEventListener("mousemove", mouseMove, false);
       document.removeEventListener("mouseup", mouseUp, false);
     },
-    x = 0,
-    y = 0,
-    _mouseDown = false,
+    mousedown = false,
+    queue = null,
     board = null;
 
   return {
-    start: function (onStop, onError) {
-      PointerLock.requestLock($(document.body),function () {
-        board = new Board();
-        cleanMouseEvents();
-        addMouseEvents();
-      }, function () {
-        this.stop(onStop);
-      }.bind(this), onError);
+    start: function () {
+      PointerLock.requestLock($(document.body),
+        function () {
+          queue = new Queue();
+          board = new Board();
+          queue.reset();
+          cleanMouseEvents();
+          addMouseEvents();
+        });
     },
-    stop: function (callback) {
+    stop: function (onStop) {
       cleanMouseEvents();
-      callback();
+      onStop();
     },
     play: function (canvas_elm, recording) {
+      queue = new Queue();
       board = new Board(canvas_elm, recording.bound);
-      board.playRecording(recording.queue);
+      queue.set(recording.queue);
+      queue.forEachpop(function (x, y, type) {
+        switch (type) {
+          case 0:
+            board.pen.moveTo(x, y);
+            break;
+          case 1:
+            board.pen.lineTo(x, y);
+            break;
+        }
+      }.bind(this));
     },
     get: function () {
-      return board.get();
+      return {
+        bound: board.get(),
+        queue: queue.get()
+      };
     },
     clear: function () {
+      queue.clear();
       board.clear();
     }
   };
