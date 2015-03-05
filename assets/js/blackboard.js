@@ -1,3 +1,5 @@
+var doc = document;
+
 var Point = Class.Create({
   init: function (x, y) {
     this.x = x;
@@ -43,12 +45,14 @@ var Queue = (function () {
           fn(x, y, type);
           if (--i) {
             iterate(i);
+          } else {
+            fn(undefined, undefined, 2);
           }
         }, interval);
       }, temp_array;
 
       temp_array = array.slice();
-      iterate(temp_array.length);
+      iterate(temp_array.length);      
     },
     get: function () {
       return array;
@@ -181,33 +185,30 @@ var Record = (function () {
       return false;
     },
     mouseMove = function (e) {
-      var movement= null,
-        x = 0,
-        y = 0;
-
-      if (mousedown) {
-        movement = getMovement(e);
-        x = movement.x;
+      var movement = getMovement(e),
+        x = movement.x,
         y = movement.y;
 
+      if (mousedown) {
         queue.push(x, y, 1);
         board.resetBoundary(x, y);
       }
       return false;
     },
-    mouseUp = function () {
+    mouseUp = function (e) {
+      getMovement(e);
       mousedown = false;
       return false;
     },
     addMouseEvents = function () {
-      document.addEventListener("mousedown", mouseDown, false);
-      document.addEventListener("mousemove", mouseMove, false);
-      document.addEventListener("mouseup", mouseUp, false);    
+      doc.addEventListener("mousedown", mouseDown, false);
+      doc.addEventListener("mousemove", mouseMove, false);
+      doc.addEventListener("mouseup", mouseUp, false);    
     },
     cleanMouseEvents = function () {
-      document.removeEventListener("mousedown", mouseDown, false);
-      document.removeEventListener("mousemove", mouseMove, false);
-      document.removeEventListener("mouseup", mouseUp, false);
+      doc.removeEventListener("mousedown", mouseDown, false);
+      doc.removeEventListener("mousemove", mouseMove, false);
+      doc.removeEventListener("mouseup", mouseUp, false);
     },
     mousedown = false,
     queue = null,
@@ -215,7 +216,7 @@ var Record = (function () {
 
   return {
     start: function () {
-      PointerLock.requestLock($(document.body),
+      PointerLock.requestLock($(doc.body),
         function () {
           queue = new Queue();
           board = new Board();
@@ -228,7 +229,7 @@ var Record = (function () {
       cleanMouseEvents();
       onStop();
     },
-    play: function (canvas_elm, recording) {
+    play: function (canvas_elm, recording, complete) {
       queue = new Queue();
       board = new Board(canvas_elm, recording.bound);
       queue.set(recording.queue);
@@ -239,6 +240,9 @@ var Record = (function () {
             break;
           case 1:
             board.pen.lineTo(x, y);
+            break;
+          case 2:
+            complete();
             break;
         }
       }.bind(this));
