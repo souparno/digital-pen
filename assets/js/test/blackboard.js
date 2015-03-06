@@ -19,46 +19,46 @@ Function.prototype.bind = Function.prototype.bind ||
     };
   };
 
-//QUnit.module('Queue', {
-//  beforeEach: function () {
-//    this.queue = new Queue();
-//    this.queue.reset();
-//  },
-//  afterEach: function () {
-//    this.queue.reset();
-//  }
-//});
-//QUnit.asyncTest('push', function (assert) {
-//  var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
-//    intervals = [0, 500, 1000],
-//    temp_pointList = pointList.slice(),
-//    temp_intervals = intervals.slice(),
-//    loop = function (i, timeslot) {
-//      setTimeout(function () {
-//        var point = temp_pointList.shift();
-//
-//        this.queue.push(point.x, point.y, 0);
-//        if (--i) {
-//          loop.call(this, i, temp_intervals.shift());
-//        } else {
-//          timeTest.call(this);
-//        }
-//      }.bind(this), timeslot);
-//    },
-//    timeTest = function () {
-//      var actionList = this.queue.get(),
-//        point;
-//
-//      for (var action in actionList) {
-//        point = pointList.shift();
-//        assert.equal(actionList[action].x, point.x);
-//        assert.equal(Math.round(actionList[action].interval / 100) * 100,
-//          intervals.shift());
-//      }
-//      QUnit.start();
-//    };
-//  loop.call(this, temp_pointList.length, temp_intervals.shift());
-//});
+QUnit.module('Queue', {
+  beforeEach: function () {
+    this.queue = new Queue();
+    this.queue.reset();
+  },
+  afterEach: function () {
+    this.queue.reset();
+  }
+});
+QUnit.asyncTest('push', function (assert) {
+  var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
+    intervals = [0, 500, 1000],
+    temp_pointList = pointList.slice(),
+    temp_intervals = intervals.slice(),
+    loop = function (i, timeslot) {
+      setTimeout(function () {
+        var point = temp_pointList.shift();
+
+        this.queue.push(point.x, point.y, 0);
+        if (--i) {
+          loop.call(this, i, temp_intervals.shift());
+        } else {
+          timeTest.call(this);
+        }
+      }.bind(this), timeslot);
+    },
+    timeTest = function () {
+      var actionList = this.queue.get(),
+        point;
+
+      for (var action in actionList) {
+        point = pointList.shift();
+        assert.equal(actionList[action].x, point.x);
+        assert.equal(Math.round(actionList[action].interval / 100) * 100,
+          intervals.shift());
+      }
+      QUnit.start();
+    };
+  loop.call(this, temp_pointList.length, temp_intervals.shift());
+});
 //QUnit.asyncTest('forEachpop', function (assert) {
 //  var pointList = [{x: 1, y: 2}, {x: 3, y: 4}, {x: 5, y: 6}],
 //    intervals = [500, 1000, 2000],
@@ -88,7 +88,6 @@ Function.prototype.bind = Function.prototype.bind ||
 //        assert.equal(x, point.x);
 //        assert.equal(y, point.y);
 //        assert.equal(Math.round(interval / 100) * 100, intervals.shift());
-//        console.log(Math.round(interval / 100) * 100);
 //        if (!intervals.length) {
 //          QUnit.start();
 //        }
@@ -145,35 +144,64 @@ QUnit.module('Record', {
   afterEach: function () {
     $ = this.$;
     doc = document;
-    //this.record.clear();
   }
 });
 QUnit.asyncTest('start', function (assert) {
   var recording = {},
-    height = 0;
+    height = 0,
+    queue_check = [
+      {x: 0, y: 0, type: 0},
+      {x: 1, y: -1, type: 1},
+      {x: 2, y: -2, type: 1},
+      {x: 3, y: -3, type: 1},
+      {x: 4, y: -4, type: 1},
+      {x: 5, y: -5, type: 1},
+      {x: 6, y: -6, type: 1},
+      {x: 7, y: -7, type: 1},
+      {x: 8, y: -8, type: 1},
+      {x: 9, y: -9, type: 1},
+      {x: 10, y: -10, type: 1}
+    ],
+    lineTo_check = [
+      {x: 0.5, y: 4.5},
+      {x: 1, y: 4},
+      {x: 1.5, y: 3.5},
+      {x: 2, y: 3},
+      {x: 2.5, y: 2.5},
+      {x: 3, y: 2},
+      {x: 3.5, y: 1.5},
+      {x: 4, y: 1},
+      {x: 4.5, y: 0.5},
+      {x: 5, y: 0}
+    ];
 
   this.record.start();
   doc.mousedown({movementX: 0, movementY: 0});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
-  //doc.mouseup({movementX: 0, movementY: 0});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
-  //doc.mousedown({movementX: 0, movementY: 0});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
-  //doc.mouseup({movementX: 0, movementY: 0});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
-  //doc.mousedown({movementX: 0, movementY: 0});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mouseup({movementX: 0, movementY: 0});
   recording = this.record.get();
+
+  for(var k in recording.queue){
+    var q = queue_check.shift();
+
+    assert.equal(recording.queue[k].x, q.x);
+    assert.equal(recording.queue[k].y, q.y);
+    assert.equal(recording.queue[k].type, q.type);
+  }  
   assert.equal(recording.bound.minX, 0);
   assert.equal(recording.bound.maxX, 10);
   assert.equal(recording.bound.minY, -10);
   assert.equal(recording.bound.maxY, 0);
+
   this.width = function () {
     return 5;
   };
@@ -183,51 +211,10 @@ QUnit.asyncTest('start', function (assert) {
     }
   };
   this.cntxt.lineTo = function (x, y) {
-    console.log('-->', x, y);
-  };
-  this.record.play(true,
-    recording,
-    function () {
-      assert.equal(height, 5);
-      this.start();
-    }.bind(QUnit));
-});
-QUnit.asyncTest('start2', function (assert) {
-  var recording = {},
-    height = 0;
-
-  this.record.start();
-  doc.mousedown({movementX: 0, movementY: 0});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mouseup({movementX: 0, movementY: 0});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousedown({movementX: 0, movementY: 0});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mouseup({movementX: 0, movementY: 0});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousedown({movementX: 0, movementY: 0});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mousemove({movementX: 1, movementY: -1});
-  doc.mouseup({movementX: 0, movementY: 0});
-  recording = this.record.get();
-  assert.equal(recording.bound.minX, 0);
-  assert.equal(recording.bound.maxX, 10);
-  assert.equal(recording.bound.minY, -10);
-  assert.equal(recording.bound.maxY, 0);
-  this.width = function () {
-    return 5;
-  };
-  this.attr = function (key, value) {
-    if (key === 'height') {
-      height = value;
-    }
-  };
-  this.cntxt.lineTo = function (x, y) {
-    console.log(x, y);
+    var cord = lineTo_check.shift();
+    
+    assert.equal(cord.x, x);
+    assert.equal(cord.y, y);
   };
   this.record.play(true,
     recording,

@@ -160,13 +160,13 @@ var Record = (function () {
 
           return function (e) {
             var movementX = e.movementX ||
-              e.mozMovementX ||
-              e.webkitMovementX ||
-              0,
+                e.mozMovementX ||
+                e.webkitMovementX ||
+                0,
               movementY = e.movementY ||
-              e.mozMovementY ||
-              e.webkitMovementY ||
-              0;
+                e.mozMovementY ||
+                e.webkitMovementY ||
+                0;
 
             x += movementX;
             y += movementY;
