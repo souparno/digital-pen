@@ -152,77 +152,76 @@ var Board = (function () {
 }());
 
 var Record = (function () {
-  var getMovement =
-    (function () {
-      var x =0, y=0;
+  var addEvents = 
+    function () {
+      var getCoordinate =
+        (function (X, Y) {
+          var x =X, y=Y;
 
-      return function (e) {
-        var movementX = e.movementX ||
-          e.mozMovementX ||
-          e.webkitMovementX ||
-          0,
-          movementY = e.movementY ||
-          e.mozMovementY ||
-          e.webkitMovementY ||
-          0;
+          return function (e) {
+            var movementX = e.movementX ||
+              e.mozMovementX ||
+              e.webkitMovementX ||
+              0,
+              movementY = e.movementY ||
+              e.mozMovementY ||
+              e.webkitMovementY ||
+              0;
 
-        x += movementX;
-        y += movementY;
-        return {
-          x: x,
-          y: y
-        };
-      };
-    }()),
-    mouseDown = function (e) {
-      var movement = getMovement(e),
-        x = movement.x,
-        y = movement.y;
+            x += movementX;
+            y += movementY;
+            return {
+              x: x,
+              y: y
+            };
+          };
+        }(0, 0)),
+        mouseDown = function (e) {
+          var pos = getCoordinate(e),
+            x = pos.x,
+            y = pos.y;
 
-      mousedown = true;
-      queue.push(x, y, 0);
-      board.resetBoundary(x, y);
-      return false;
-    },
-    mouseMove = function (e) {
-      var movement = getMovement(e),
-        x = movement.x,
-        y = movement.y;
+          mousedown = true;
+          queue.push(x, y, 0);
+          board.resetBoundary(x, y);
+          return false;
+        },
+        mouseMove = function (e) {
+          var pos = getCoordinate(e),
+            x = pos.x,
+            y = pos.y;
 
-      if (mousedown) {
-        queue.push(x, y, 1);
-        board.resetBoundary(x, y);
-      }
-      return false;
-    },
-    mouseUp = function (e) {
-      getMovement(e);
-      mousedown = false;
-      return false;
-    },
-    addMouseEvents = function () {
+          if (mousedown) {
+            queue.push(x, y, 1);
+            board.resetBoundary(x, y);
+          }
+          return false;
+        },
+        mouseUp = function (e) {
+          getCoordinate(e);
+          mousedown = false;
+          return false;
+        },
+        mousedown = false;
+
+      doc.removeEventListener("mousedown", mouseDown, false);
+      doc.removeEventListener("mousemove", mouseMove, false);
+      doc.removeEventListener("mouseup", mouseUp, false);
       doc.addEventListener("mousedown", mouseDown, false);
       doc.addEventListener("mousemove", mouseMove, false);
       doc.addEventListener("mouseup", mouseUp, false);    
     },
-    cleanMouseEvents = function () {
-      doc.removeEventListener("mousedown", mouseDown, false);
-      doc.removeEventListener("mousemove", mouseMove, false);
-      doc.removeEventListener("mouseup", mouseUp, false);
-    },
-    mousedown = false,
     queue = null,
     board = null;
 
-  return {
+  return Class.Create({
     start: function () {
       PointerLock.requestLock($(doc.body),
-        function () {
+        function () {          
           queue = new Queue();
           board = new Board();
           queue.reset();
-          cleanMouseEvents();
-          addMouseEvents();
+          addEvents();
         });
     },
     stop: function (onStop) {
@@ -257,5 +256,5 @@ var Record = (function () {
       queue.clear();
       board.clear();
     }
-  };
+  });
 }());

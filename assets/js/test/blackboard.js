@@ -140,17 +140,63 @@ QUnit.module('Record', {
     PointerLock.requestLock = function (elm, fn) {
       fn();
     };
+    this.record = new Record();
   },
   afterEach: function () {
     $ = this.$;
     doc = document;
+    //this.record.clear();
   }
 });
 QUnit.asyncTest('start', function (assert) {
   var recording = {},
     height = 0;
 
-  Record.start();
+  this.record.start();
+  doc.mousedown({movementX: 0, movementY: 0});
+  doc.mousemove({movementX: 1, movementY: -1});
+  doc.mousemove({movementX: 1, movementY: -1});
+  //doc.mouseup({movementX: 0, movementY: 0});
+  doc.mousemove({movementX: 1, movementY: -1});
+  doc.mousemove({movementX: 1, movementY: -1});
+  //doc.mousedown({movementX: 0, movementY: 0});
+  doc.mousemove({movementX: 1, movementY: -1});
+  doc.mousemove({movementX: 1, movementY: -1});
+  //doc.mouseup({movementX: 0, movementY: 0});
+  doc.mousemove({movementX: 1, movementY: -1});
+  doc.mousemove({movementX: 1, movementY: -1});
+  //doc.mousedown({movementX: 0, movementY: 0});
+  doc.mousemove({movementX: 1, movementY: -1});
+  doc.mousemove({movementX: 1, movementY: -1});
+  doc.mouseup({movementX: 0, movementY: 0});
+  recording = this.record.get();
+  assert.equal(recording.bound.minX, 0);
+  assert.equal(recording.bound.maxX, 10);
+  assert.equal(recording.bound.minY, -10);
+  assert.equal(recording.bound.maxY, 0);
+  this.width = function () {
+    return 5;
+  };
+  this.attr = function (key, value) {
+    if (key === 'height') {
+      height = value;
+    }
+  };
+  this.cntxt.lineTo = function (x, y) {
+    console.log('-->', x, y);
+  };
+  this.record.play(true,
+    recording,
+    function () {
+      assert.equal(height, 5);
+      this.start();
+    }.bind(QUnit));
+});
+QUnit.asyncTest('start2', function (assert) {
+  var recording = {},
+    height = 0;
+
+  this.record.start();
   doc.mousedown({movementX: 0, movementY: 0});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
@@ -167,7 +213,7 @@ QUnit.asyncTest('start', function (assert) {
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mousemove({movementX: 1, movementY: -1});
   doc.mouseup({movementX: 0, movementY: 0});
-  recording = Record.get();
+  recording = this.record.get();
   assert.equal(recording.bound.minX, 0);
   assert.equal(recording.bound.maxX, 10);
   assert.equal(recording.bound.minY, -10);
@@ -183,7 +229,7 @@ QUnit.asyncTest('start', function (assert) {
   this.cntxt.lineTo = function (x, y) {
     console.log(x, y);
   };
-  Record.play(true,
+  this.record.play(true,
     recording,
     function () {
       assert.equal(height, 5);
@@ -221,7 +267,7 @@ QUnit.asyncTest('play', function (assert) {
     assert.equal(x, point.x);
     assert.equal(y, point.y);
   };
-  Record.play(true,
+  this.record.play(true,
     {
       bound: bound,
       queue: queue

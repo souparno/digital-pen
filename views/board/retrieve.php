@@ -50,10 +50,11 @@
     <?php echo $data[0]['chalkmarks'] ?>
     <script>
       $(document).ready(function () {
+        var record = new Record();
          $('#playBtn').click(function () {
           $("#audio").attr("src", '/uploads/<?php echo $data[0]['audio_file']; ?>');
           $("#audio")[0].play();
-          Record.play($('#canvas1'), <?php echo $data[0]['chalkmarks']; ?>);
+          record.play($('#canvas1'), <?php echo $data[0]['chalkmarks']; ?>);
         });
       });      
     </script>
