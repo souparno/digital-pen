@@ -93,7 +93,7 @@ var Board = (function () {
     cntxt = null,
     height = 0,
     width = 0,
-    pen;
+    pen = null;
 
   return Class.Create({
     init: function () {
@@ -187,9 +187,80 @@ var Boundary = (function () {
   });
 }());
 
+//var Event = (function () {
+//  var getCoordinate =
+//    (function (X, Y) {
+//      var x = X, y = Y;
+//
+//      return function (e) {
+//        var movementX = e.movementX ||
+//          e.mozMovementX ||
+//          e.webkitMovementX ||
+//          0,
+//          movementY = e.movementY ||
+//          e.mozMovementY ||
+//          e.webkitMovementY ||
+//          0;
+//
+//        x += movementX;
+//        y += movementY;
+//        return {
+//          x: x,
+//          y: y
+//        };
+//      };
+//    }(0, 0)),
+//    mouseDown = function (e) {
+//      var pos = getCoordinate(e),
+//        x = pos.x,
+//        y = pos.y;
+//
+//      mousedown = true;
+//      if (canRecord) {
+//        queue.push(x, y, 0);
+//        boundary.setMinX(x);
+//        boundary.setMaxX(x);
+//        boundary.setMinY(y);
+//        boundary.setMaxY(y);
+//      }
+//      return false;
+//    },
+//    mouseMove = function (e) {
+//      var pos = getCoordinate(e),
+//        x = pos.x,
+//        y = pos.y;
+//
+//      if (mousedown && canRecord) {
+//        queue.push(x, y, 1);
+//        boundary.setMinX(x);
+//        boundary.setMaxX(x);
+//        boundary.setMinY(y);
+//        boundary.setMaxY(y);
+//      }
+//      return false;
+//    },
+//    mouseUp = function (e) {
+//      getCoordinate(e);
+//      mousedown = false;
+//      return false;
+//    },
+//    mousedown = false;
+//
+//  return Class.Create({
+//    bind: function (elm) {  
+//      elm.removeEventListener("mousedown", mouseDown, false);
+//      elm.removeEventListener("mousemove", mouseMove, false);
+//      elm.removeEventListener("mouseup", mouseUp, false);
+//      elm.addEventListener("mousedown", mouseDown, false);
+//      elm.addEventListener("mousemove", mouseMove, false);
+//      elm.addEventListener("mouseup", mouseUp, false);
+//    }
+//  });
+//}());
+
 var Record = (function () {
   var addEvents =
-    function () {
+    (function () {
       var getCoordinate =
         (function (X, Y) {
           var x = X, y = Y;
@@ -247,14 +318,16 @@ var Record = (function () {
           return false;
         },
         mousedown = false;
-
-      doc.removeEventListener("mousedown", mouseDown, false);
-      doc.removeEventListener("mousemove", mouseMove, false);
-      doc.removeEventListener("mouseup", mouseUp, false);
-      doc.addEventListener("mousedown", mouseDown, false);
-      doc.addEventListener("mousemove", mouseMove, false);
-      doc.addEventListener("mouseup", mouseUp, false);
-    },
+        
+      return function () {  
+        doc.removeEventListener("mousedown", mouseDown, false);
+        doc.removeEventListener("mousemove", mouseMove, false);
+        doc.removeEventListener("mouseup", mouseUp, false);
+        doc.addEventListener("mousedown", mouseDown, false);
+        doc.addEventListener("mousemove", mouseMove, false);
+        doc.addEventListener("mouseup", mouseUp, false);
+      }
+    }()),
     normalise = function (X, Y) {
       var 
         ratioX = board.getWidth() / boundary.getWidth(),
@@ -302,7 +375,7 @@ var Record = (function () {
           }
         },
         this.stop.bind(this, onStop)
-        );
+      );
     },
     stop: function (onStop) {
       canRecord = false;
