@@ -326,7 +326,7 @@ var Record = (function () {
         doc.addEventListener("mousedown", mouseDown, false);
         doc.addEventListener("mousemove", mouseMove, false);
         doc.addEventListener("mouseup", mouseUp, false);
-      }
+      };
     }()),
     normalise = function (X, Y) {
       var 
