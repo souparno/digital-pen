@@ -215,10 +215,10 @@ var MouseEvent =  (function () {
     mouseDragEvtAdded,
     mouseUpEvtAdded;
 
-  return Class.create({
+  return Class.Create({
     init: function () {
       mouseDownEvtAdded = false;
-      mouseDragEvtAdded = false
+      mouseDragEvtAdded = false;
     },
     onMouseDown: function (fn, e) {
       var pos = {}, x =0, y = 0;
@@ -241,8 +241,8 @@ var MouseEvent =  (function () {
       
       if(!mouseDragEvtAdded) {
         mouseDragEvtAdded = true;
-        doc.removeEventListener("mousemove", this.onMouseMove, false);
-        doc.addEventListener("mousedown", this.onMouseMove.bind(this, fn), false);
+        doc.removeEventListener("mousemove", this.onMouseDrag, false);
+        doc.addEventListener("mousedown", this.onMouseDrag.bind(this, fn), false);
         return false;
       }
       pos = getCoordinate(e);
