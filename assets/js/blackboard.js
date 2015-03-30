@@ -242,7 +242,7 @@ var MouseEvent =  (function () {
       if(!mouseDragEvtAdded) {
         mouseDragEvtAdded = true;
         doc.removeEventListener("mousemove", this.onMouseDrag, false);
-        doc.addEventListener("mousedown", this.onMouseDrag.bind(this, fn), false);
+        doc.addEventListener("mousemove", this.onMouseDrag.bind(this, fn), false);
         return false;
       }
       pos = getCoordinate(e);
@@ -253,7 +253,7 @@ var MouseEvent =  (function () {
       }      
       return false;
     },
-    onMouseUp: function () {
+    onMouseUp: function (e) {
       if(!mouseUpEvtAdded) {
         mouseDragEvtAdded = true;
         doc.removeEventListener("mouseup", this.onMouseUp, false);
@@ -273,18 +273,8 @@ var Record = (function () {
         ratioY = canvas.getHeight() / boundary.getHeight(),
         boundaryMinX = boundary.getMinX(),
         boundaryMinY = boundary.getMinY(),
-        x =
-        (
-          (
-            X + (boundaryMinX < 0 ? (-1 * boundaryMinX) : 0)
-          ) * ratioX
-        ),
-        y =
-        (
-          (
-            Y + (boundaryMinY < 0 ? (-1 * boundaryMinY) : 0)
-          ) * ratioY
-        );
+        x =((X + (boundaryMinX < 0 ? (-1 * boundaryMinX) : 0)) * ratioX),
+        y =((Y + (boundaryMinY < 0 ? (-1 * boundaryMinY) : 0)) * ratioY);
 
       return {
         x: x,
