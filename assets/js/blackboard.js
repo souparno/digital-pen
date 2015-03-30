@@ -88,7 +88,7 @@ Pen = (function () {
   });
 }());
 
-var Board = (function () {
+var Canvas = (function () {
   var canvas = null,
     cntxt = null,
     height = 0,
@@ -187,151 +187,90 @@ var Boundary = (function () {
   });
 }());
 
-//var Event = (function () {
-//  var getCoordinate =
-//    (function (X, Y) {
-//      var x = X, y = Y;
-//
-//      return function (e) {
-//        var movementX = e.movementX ||
-//          e.mozMovementX ||
-//          e.webkitMovementX ||
-//          0,
-//          movementY = e.movementY ||
-//          e.mozMovementY ||
-//          e.webkitMovementY ||
-//          0;
-//
-//        x += movementX;
-//        y += movementY;
-//        return {
-//          x: x,
-//          y: y
-//        };
-//      };
-//    }(0, 0)),
-//    mouseDown = function (e) {
-//      var pos = getCoordinate(e),
-//        x = pos.x,
-//        y = pos.y;
-//
-//      mousedown = true;
-//      if (canRecord) {
-//        queue.push(x, y, 0);
-//        boundary.setMinX(x);
-//        boundary.setMaxX(x);
-//        boundary.setMinY(y);
-//        boundary.setMaxY(y);
-//      }
-//      return false;
-//    },
-//    mouseMove = function (e) {
-//      var pos = getCoordinate(e),
-//        x = pos.x,
-//        y = pos.y;
-//
-//      if (mousedown && canRecord) {
-//        queue.push(x, y, 1);
-//        boundary.setMinX(x);
-//        boundary.setMaxX(x);
-//        boundary.setMinY(y);
-//        boundary.setMaxY(y);
-//      }
-//      return false;
-//    },
-//    mouseUp = function (e) {
-//      getCoordinate(e);
-//      mousedown = false;
-//      return false;
-//    },
-//    mousedown = false;
-//
-//  return Class.Create({
-//    bind: function (elm) {  
-//      elm.removeEventListener("mousedown", mouseDown, false);
-//      elm.removeEventListener("mousemove", mouseMove, false);
-//      elm.removeEventListener("mouseup", mouseUp, false);
-//      elm.addEventListener("mousedown", mouseDown, false);
-//      elm.addEventListener("mousemove", mouseMove, false);
-//      elm.addEventListener("mouseup", mouseUp, false);
-//    }
-//  });
-//}());
+var MouseEvent =  (function () {
+  var getCoordinate =
+    (function (X, Y) {
+      var x = X, y = Y;
+
+      return function (e) {
+        var movementX = e.movementX ||
+            e.mozMovementX ||
+            e.webkitMovementX ||
+            0,
+          movementY = e.movementY ||
+            e.mozMovementY ||
+            e.webkitMovementY ||
+            0;
+
+        x += movementX;
+        y += movementY;
+        return {
+          x: x,
+          y: y
+        };
+      };
+    }(0, 0)), 
+    mousedown = false,
+    mouseDownEvtAdded,  
+    mouseDragEvtAdded,
+    mouseUpEvtAdded;
+
+  return Class.create({
+    init: function () {
+      mouseDownEvtAdded = false;
+      mouseDragEvtAdded = false
+    },
+    onMouseDown: function (fn, e) {
+      var pos = {}, x =0, y = 0;
+
+      if(!mouseDownEvtAdded) {
+        mouseDownEvtAdded = true;
+        doc.removeEventListener("mousedown", this.onMouseDown, false);
+        doc.addEventListener("mousedown", this.onMouseDown.bind(this, fn), false);
+        return false;
+      }       
+      mousedown = true;
+      pos = getCoordinate(e);
+      x = pos.x;
+      y = pos.y;      
+      fn(x, y);
+      return false;
+    },
+    onMouseDrag: function (fn, e) {
+      var pos = {}, x =0, y = 0;
+      
+      if(!mouseDragEvtAdded) {
+        mouseDragEvtAdded = true;
+        doc.removeEventListener("mousemove", this.onMouseMove, false);
+        doc.addEventListener("mousedown", this.onMouseMove.bind(this, fn), false);
+        return false;
+      }
+      pos = getCoordinate(e);
+      x = pos.x;
+      y = pos.y;
+      if(mousedown){
+        fn(x, y);
+      }      
+      return false;
+    },
+    onMouseUp: function () {
+      if(!mouseUpEvtAdded) {
+        mouseDragEvtAdded = true;
+        doc.removeEventListener("mouseup", this.onMouseUp, false);
+        doc.addEventListener("mouseup", this.onMouseUp.bind(this), false);
+        return false;
+      }
+      mousedown = false;
+      getCoordinate(e);
+      return false;
+    }
+  });
+}());
 
 var Record = (function () {
-  var addEvents =
-    (function () {
-      var getCoordinate =
-        (function (X, Y) {
-          var x = X, y = Y;
-
-          return function (e) {
-            var movementX = e.movementX ||
-              e.mozMovementX ||
-              e.webkitMovementX ||
-              0,
-              movementY = e.movementY ||
-              e.mozMovementY ||
-              e.webkitMovementY ||
-              0;
-
-            x += movementX;
-            y += movementY;
-            return {
-              x: x,
-              y: y
-            };
-          };
-        }(0, 0)),
-        mouseDown = function (e) {
-          var pos = getCoordinate(e),
-            x = pos.x,
-            y = pos.y;
-
-          mousedown = true;
-          if (canRecord) {
-            queue.push(x, y, 0);
-            boundary.setMinX(x);
-            boundary.setMaxX(x);
-            boundary.setMinY(y);
-            boundary.setMaxY(y);
-          }
-          return false;
-        },
-        mouseMove = function (e) {
-          var pos = getCoordinate(e),
-            x = pos.x,
-            y = pos.y;
-
-          if (mousedown && canRecord) {
-            queue.push(x, y, 1);
-            boundary.setMinX(x);
-            boundary.setMaxX(x);
-            boundary.setMinY(y);
-            boundary.setMaxY(y);
-          }
-          return false;
-        },
-        mouseUp = function (e) {
-          getCoordinate(e);
-          mousedown = false;
-          return false;
-        },
-        mousedown = false;
-        
-      return function () {  
-        doc.removeEventListener("mousedown", mouseDown, false);
-        doc.removeEventListener("mousemove", mouseMove, false);
-        doc.removeEventListener("mouseup", mouseUp, false);
-        doc.addEventListener("mousedown", mouseDown, false);
-        doc.addEventListener("mousemove", mouseMove, false);
-        doc.addEventListener("mouseup", mouseUp, false);
-      };
-    }()),
-    normalise = function (X, Y) {
-      var 
-        ratioX = board.getWidth() / boundary.getWidth(),
-        ratioY = board.getHeight() / boundary.getHeight(),
+  var normalise = function (X, Y) {
+      var ratioX = canvas.getWidth() / boundary.getWidth(),
+        ratioY = canvas.getHeight() / boundary.getHeight(),
         boundaryMinX = boundary.getMinX(),
         boundaryMinY = boundary.getMinY(),
         x =
@@ -352,22 +291,45 @@ var Record = (function () {
         y: y
       };
     },
+    onMouseDown= function (x, y) {
+      if (canRecord) {
+        queue.push(x, y, 0);
+        boundary.setMinX(x);
+        boundary.setMaxX(x);
+        boundary.setMinY(y);
+        boundary.setMaxY(y);
+      }
+    },
+    onMouseDrag = function (x, y) {
+      if (canRecord) {
+        queue.push(x, y, 1);
+        boundary.setMinX(x);
+        boundary.setMaxX(x);
+        boundary.setMinY(y);
+        boundary.setMaxY(y);
+      }
+    },
     canRecord = false,
     queue = null,
-    board = null,
-    boundary = null;
+    canvas = null,
+    boundary = null,
+    mouseevent = null;
 
   return Class.Create({
     init: function () {
       queue = new Queue();
       boundary = new Boundary();
-      board = new Board();
+      canvas = new canvas();
+      mouseevent = new MouseEvent();
     },
     start: function (onStart, onStop) {
       PointerLock.requestLock(
         $(doc.body),
         function () {
           canRecord = true;
+          mouseevent.onMouseDown(onMouseDown);
+          mouseevent.onMouseDrag(onMouseDrag);
+          mouseevent.onMouseUp();
           queue.reset();
           addEvents();
           if (typeof onStart === 'function') {
@@ -385,7 +347,7 @@ var Record = (function () {
     },
     play: function (canvas_elm, recording, playComplete) {
       boundary.set(recording.boundary);
-      board.set(canvas_elm, boundary.getHeight() / boundary.getWidth());      
+      canvas.set(canvas_elm, boundary.getHeight() / boundary.getWidth());      
       queue.set(recording.queue);
       queue.forEachpop(
         function (x, y, type) {
@@ -393,10 +355,10 @@ var Record = (function () {
 
           switch (type) {
             case 0:            
-              board.pen.moveTo(pos.x, pos.y);
+              canvas.pen.moveTo(pos.x, pos.y);
               break;
             case 1:
-              board.pen.lineTo(pos.x, pos.y);
+              canvas.pen.lineTo(pos.x, pos.y);
               break;
           }
         }.bind(this),
@@ -415,7 +377,7 @@ var Record = (function () {
     },
     clear: function () {
       queue.clear();
-      board.clear();
+      canvas.clear();
     }
   });
 }());
