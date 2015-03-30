@@ -68,7 +68,7 @@ var Queue = (function () {
   });
 }());
 
-Pen = (function () {
+var Pen = (function () {
   var cntxt = null;
 
   return Class.Create({
