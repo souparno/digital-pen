@@ -319,7 +319,7 @@ var Record = (function () {
     init: function () {
       queue = new Queue();
       boundary = new Boundary();
-      canvas = new canvas();
+      canvas = new Canvas();
       mouseevent = new MouseEvent();
     },
     start: function (onStart, onStop) {
