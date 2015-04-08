@@ -2,17 +2,16 @@ $(document).ready(function () {
 
   var record = new Record();
 
-  $('#enable-audio').click(function () {
-    $.voice.record(function () {  });
-  });
+//  $('#enable-audio').click(function () {
+//    $.voice.record(function () {  });
+//  });
   $('#start-record').click(function () {
     record.start();
   });
 
   $('#save-board').click(function () {
-    $.voice.export(function (blob) {
-      var formData = new FormData();
-      formData.append('blob', blob);
+    var formData = new FormData();
+      formData.append('blob', 'ddd');
       formData.append('chalkmarks', JSON.stringify(record.get()));
       formData.append('title', $("#title").val());
       formData.append('description', $("#description").val());
@@ -23,6 +22,5 @@ $(document).ready(function () {
         contentType: false,
         type: 'POST'                      
       });
-    }, 'blob');
   });
 });

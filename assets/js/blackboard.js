@@ -211,9 +211,9 @@ var MouseEvent =  (function () {
       };
     }(0, 0)), 
     mousedown = false,
-    mouseDownEvtAdded,  
-    mouseDragEvtAdded,
-    mouseUpEvtAdded;
+    mouseDownEvtAdded = false,  
+    mouseDragEvtAdded = false,
+    mouseUpEvtAdded = false;
 
   return Class.Create({
     init: function () {

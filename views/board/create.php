@@ -13,6 +13,8 @@
         <td><textarea id="description"></textarea></td>
       </tr>
     </table>
+    <canvas id="canvas1" style="border: medium; border-color: #00F; border-style: solid;" width="1000" height="1000"></canvas>
+    <br/>
     <button id="enable-audio">Enable Audio</button>
     <button id="start-record">Start Record</button>
     <button id="save-board">Save</button>

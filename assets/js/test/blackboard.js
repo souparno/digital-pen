@@ -193,3 +193,27 @@ QUnit.asyncTest('play', function (assert) {
       QUnit.start();
     });
 });
+
+QUnit.module('MouseEvent', {
+  beforeEach: function () {
+    this.mouseevent = new MouseEvent();
+    doc = {
+      addEventListener: function (evt, fn) {
+        this[evt] = fn;
+      },
+      removeEventListener: function () {
+      }
+    };
+  },
+  afterEach: function () {
+    doc = document;
+  }
+});
+QUnit.test('onMOuseDown', function (assert) {
+  this.mouseevent.onMouseDown(function (x, y) {
+    assert.equal(x, 1);
+    assert.equal(y, 2);
+  });
+
+  doc.mousedown({movementX: 1, movementY: 2});  
+});
